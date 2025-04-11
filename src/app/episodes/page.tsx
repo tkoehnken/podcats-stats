@@ -1,15 +1,16 @@
-import { getShow } from "@/server/api/routers/spotify";
+import {getAllShowInfos} from "@/server/api/routers/spotify";
 
 export default async function Page() {
-  const show = await getShow();
+  const show = await getAllShowInfos();
 
   return (
     <div>
       <h1>{show.name}</h1>
       <ul>
-        {show.episodes.items.map((item) => (
+        {show.episodes.map((item) => (
           <li key={item.id}>
-              {item.name}
+              <h3>{item.name}</h3>
+              <article>{item.description}</article>
           </li>
         ))}
       </ul>

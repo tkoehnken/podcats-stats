@@ -40,17 +40,21 @@ type GetPathResponse<T extends Paths> = T extends ShowPath
   ? SpotifyApi.ShowObject
   : never;
 
-const execSpotify = async <T extends Paths>(
-  path: T,...cacheTags: string[]
-): Promise<GetPathResponse<T>> => {
+const rawSpotifyRequest = async (path: string,tags: string[]):Promise<Response> => {
   const token = await getAuthToken();
-  const response = await fetch(`${baseURL}${path}`, {
+  return await fetch(path, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    next: {tags: cacheTags},
-    cache: "force-cache"
+    next: { tags },
+    cache: "force-cache",
   });
+}
+
+const execSpotify = async <T extends Paths>(
+  path: T,...cacheTags: string[]
+): Promise<GetPathResponse<T>> => {
+  const response = await rawSpotifyRequest(`${baseURL}${path}`,cacheTags);
 
   if (response.ok) {
     return (await response.json()) as GetPathResponse<T>;
@@ -64,3 +68,24 @@ export const getShow = async (): Promise<SpotifyApi.ShowObject> => {
   const path: ShowPath = `shows/1MLK42q9YcHVVu8IM8cOdw`;
   return await execSpotify(path,"show");
 };
+
+
+export const getAllShowInfos = async () => {
+  const show = await getShow();
+  let episodeUrl = show.episodes.next;
+  const episodes = show.episodes.items
+  while (episodeUrl!==null) {
+    const ep = await rawSpotifyRequest(episodeUrl,[episodeUrl]);
+    if(!ep.ok) throw Error(`Failed ${episodeUrl} [${ep.status}]: ${ep.statusText}`);
+    const epData = await ep.json() as SpotifyApi.ShowEpisodesResponse;
+    episodes.push(...epData.items)
+    episodeUrl=epData.next;
+  }
+  return {
+    name: show.name,
+    images: show.images,
+    description: show.description,
+    episodes,
+    date: Date.now()
+  }
+}
