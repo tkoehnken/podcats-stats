@@ -5,6 +5,13 @@
 import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
-const config = {};
+const config = {
+    experimental: {
+        reactCompiler: true,
+    },
+    images: {
+        remotePatterns: [{hostname: 'i.scdn.co'}],
+    },
+};
 
 export default config;

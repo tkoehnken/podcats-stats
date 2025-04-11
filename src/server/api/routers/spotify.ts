@@ -5,14 +5,20 @@ let authToken: string | undefined = undefined;
 const baseURL = `https://api.spotify.com/v1/`;
 
 const loadAuthToken = async (): Promise<void> => {
-  const response = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
+  const response = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
     body: new URLSearchParams({
-      'grant_type': 'client_credentials',
+      grant_type: "client_credentials",
     }),
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Basic ' + (Buffer.from(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')),
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization:
+        "Basic " +
+        Buffer.from(
+          process.env.SPOTIFY_CLIENT_ID +
+            ":" +
+            process.env.SPOTIFY_CLIENT_SECRET,
+        ).toString("base64"),
     },
   });
 
@@ -22,7 +28,11 @@ const loadAuthToken = async (): Promise<void> => {
     authToken = (await response.json()).access_token;
     return;
   }
-  console.error("Unable to logged in spotify",response.status,response.statusText);
+  console.error(
+    "Unable to logged in spotify",
+    response.status,
+    response.statusText,
+  );
 };
 
 const getAuthToken = async (): Promise<string> => {
@@ -40,7 +50,10 @@ type GetPathResponse<T extends Paths> = T extends ShowPath
   ? SpotifyApi.ShowObject
   : never;
 
-const rawSpotifyRequest = async (path: string,tags: string[]):Promise<Response> => {
+const rawSpotifyRequest = async (
+  path: string,
+  tags: string[],
+): Promise<Response> => {
   const token = await getAuthToken();
   return await fetch(path, {
     headers: {
@@ -49,12 +62,13 @@ const rawSpotifyRequest = async (path: string,tags: string[]):Promise<Response> 
     next: { tags },
     cache: "force-cache",
   });
-}
+};
 
 const execSpotify = async <T extends Paths>(
-  path: T,...cacheTags: string[]
+  path: T,
+  ...cacheTags: string[]
 ): Promise<GetPathResponse<T>> => {
-  const response = await rawSpotifyRequest(`${baseURL}${path}`,cacheTags);
+  const response = await rawSpotifyRequest(`${baseURL}${path}`, cacheTags);
 
   if (response.ok) {
     return (await response.json()) as GetPathResponse<T>;
@@ -66,26 +80,37 @@ const execSpotify = async <T extends Paths>(
 
 export const getShow = async (): Promise<SpotifyApi.ShowObject> => {
   const path: ShowPath = `shows/1MLK42q9YcHVVu8IM8cOdw`;
-  return await execSpotify(path,"show");
+  return await execSpotify(path, "show");
 };
-
 
 export const getAllShowInfos = async () => {
   const show = await getShow();
   let episodeUrl = show.episodes.next;
-  const episodes = show.episodes.items
-  while (episodeUrl!==null) {
-    const ep = await rawSpotifyRequest(episodeUrl,[episodeUrl]);
-    if(!ep.ok) throw Error(`Failed ${episodeUrl} [${ep.status}]: ${ep.statusText}`);
-    const epData = await ep.json() as SpotifyApi.ShowEpisodesResponse;
-    episodes.push(...epData.items)
-    episodeUrl=epData.next;
+  const episodes = show.episodes.items;
+  while (episodeUrl !== null) {
+    const ep = await rawSpotifyRequest(episodeUrl, [episodeUrl]);
+    if (!ep.ok)
+      throw Error(`Failed ${episodeUrl} [${ep.status}]: ${ep.statusText}`);
+    const epData = (await ep.json()) as SpotifyApi.ShowEpisodesResponse;
+    episodes.push(...epData.items);
+    episodeUrl = epData.next;
   }
   return {
     name: show.name,
     images: show.images,
     description: show.description,
     episodes,
-    date: Date.now()
-  }
-}
+    date: Date.now(),
+  };
+};
+
+export const getEpisode = async (
+  id: string,
+): Promise<SpotifyApi.EpisodeObjectSimplified> => {
+  const info = await getAllShowInfos();
+  const episode = info.episodes.filter((ep) => ep.id === id);
+  if (episode.length === 0) throw Error(`No episodes found with id ${id}`);
+  const ep = episode[0];
+  if (ep == undefined) throw Error(`No episodes found with id ${id}`);
+  return ep;
+};
