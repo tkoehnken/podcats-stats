@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import {getBiggestImage} from "@/lib/utils";
 
 type EpisodesProps = {
   list: SpotifyApi.EpisodeObjectSimplified[];
@@ -36,9 +37,7 @@ type EpisodeProps = {
 };
 
 const Episode = (props: EpisodeProps) => {
-  const img = props.data.images.reduce((prev, cur) =>
-    !!prev.height && !!cur.height && cur.height < prev.height ? prev : cur,
-  );
+  const img = getBiggestImage(props.data.images)
 
   return (
     <div className="hover:border-primary w-full rounded-xl border-2 border-transparent p-2 transition duration-300 ease-in-out">
