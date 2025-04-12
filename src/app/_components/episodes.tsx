@@ -52,6 +52,7 @@ const Episode = (props: EpisodeProps) => {
           width={150}
           alt="Episode cover"
           className="h-37.5 w-37.5"
+          loading="lazy"
         />
         <article className="whitespace-pre-wrap">
           {props.data.description}
