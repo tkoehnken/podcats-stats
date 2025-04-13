@@ -1,5 +1,10 @@
 //import "@types/spotify-api";
 
+import {
+  type ExtraDataType,
+  getExtraDataForEpisode,
+} from "@/server/api/routers/google";
+
 let authToken: string | undefined = undefined;
 
 const baseURL = `https://api.spotify.com/v1/`;
@@ -83,7 +88,31 @@ export const getShow = async (): Promise<SpotifyApi.ShowObject> => {
   return await execSpotify(path, "show");
 };
 
-export const getAllShowInfos = async () => {
+export type EpisodeType = SpotifyApi.EpisodeObjectSimplified & {
+  extraData?: ExtraDataType;
+};
+
+type ShowType = {
+  name: string;
+  images: SpotifyApi.ImageObject[];
+  description: string;
+  episodes: EpisodeType[];
+  date: number;
+};
+
+const enrichEpisodeData = async (
+  episodes: SpotifyApi.EpisodeObjectSimplified[],
+): Promise<EpisodeType[]> => {
+  const moreData: EpisodeType[] = [...episodes];
+  for (const episode of moreData) {
+    if (!episode) continue;
+    episode.extraData = await getExtraDataForEpisode(episode.id)();
+  }
+
+  return moreData;
+};
+
+export const getAllShowInfos = async (): Promise<ShowType> => {
   const show = await getShow();
   let episodeUrl = show.episodes.next;
   const episodes = show.episodes.items;
@@ -99,7 +128,7 @@ export const getAllShowInfos = async () => {
     name: show.name,
     images: show.images,
     description: show.description,
-    episodes,
+    episodes: await enrichEpisodeData(episodes),
     date: Date.now(),
   };
 };
