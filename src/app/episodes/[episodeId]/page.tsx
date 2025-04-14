@@ -1,7 +1,4 @@
 import { getAllShowInfos, getEpisode } from "@/server/api/routers/spotify";
-import { getBiggestImage } from "@/lib/utils";
-import Image from "next/image";
-import {currentUser} from "@clerk/nextjs/server";
 import Episode from "@/app/_components/episode";
 
 export async function generateStaticParams() {

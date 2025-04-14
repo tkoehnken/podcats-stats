@@ -100,13 +100,31 @@ type ShowType = {
   date: number;
 };
 
+const chunkArray = <T>(arr: T[], size = 10): T[][] => {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+};
+
 const enrichEpisodeData = async (
   episodes: SpotifyApi.EpisodeObjectSimplified[],
 ): Promise<EpisodeType[]> => {
   const moreData: EpisodeType[] = [...episodes];
-  for (const episode of moreData) {
-    if (!episode) continue;
-    episode.extraData = await getExtraDataForEpisode(episode.id)();
+  const chunks = chunkArray(moreData);
+  for (let i = 0; i < chunks.length; ++i) {
+    const chunk = chunks[i];
+    if (chunk) {
+      await Promise.all(
+        chunk.map(async (_, index) => {
+          const ep = moreData[index + i * index];
+          if (ep) {
+            ep.extraData = await getExtraDataForEpisode(ep.id)();
+          }
+        }),
+      );
+    }
   }
 
   return moreData;

@@ -10,3 +10,6 @@ export function getBiggestImage(images: SpotifyApi.ImageObject[]){
       !!prev.height && !!cur.height && cur.height < prev.height ? prev : cur,
   );
 }
+
+export const ListOfEpisodeTypes = ["classic", "guest", "preview"] as const;
+export const ListOfBookTypes = ["main","preview","next"] as const;
