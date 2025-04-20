@@ -10,14 +10,16 @@ export type Book = {
     cover: string,
     title: string,
     releaseDate: number,
-    author: string,
+    authors: {firstname: string, lastname: string}[],
     link: string,
-    types: BookTypes[]
+    types: BookTypes[],
+    description: string
 }
 
 export type Guest = {
     name: string,
-    link: string,
+    links?: {url: string,icon?: string}[],
+    img?: string
 }
 
 export type ExtraDataType = {

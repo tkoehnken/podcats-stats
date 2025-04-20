@@ -10,7 +10,7 @@ const config = {
         reactCompiler: true,
     },
     images: {
-        remotePatterns: [{hostname: 'i.scdn.co'}],
+        remotePatterns: [{hostname: 'i.scdn.co'},{hostname: 'buchhandel-rest.prod.kubernetes.vlb.de'}],
     },
 };
 
