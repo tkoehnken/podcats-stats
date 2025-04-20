@@ -1,5 +1,5 @@
 "use client";
-import type { Book } from "@/server/api/routers/google";
+import type { Book, BookTypes } from "@/server/api/routers/google";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -16,23 +16,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { api } from "@/trpc/react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { isbnSchema, typesSchema } from "@/lib/zodSchemas";
+import BookTypeSelect from "@/components/BookTypeSelect";
 
 type AddBookProps = {
   addBook: (book: Book) => void;
+  defaultType: BookTypes;
 };
-
-const isbnSchema = z.string().refine(
-  (val) => {
-    const cleaned = val.replace(/[-\s]/g, ""); // Remove hyphens/spaces
-    return /^(?:\d{9}[\dXx]|\d{13})$/.test(cleaned);
-  },
-  {
-    message: "Invalid ISBN format",
-  },
-);
 
 const formSchema = z.object({
   isbn: isbnSchema,
+  types: typesSchema,
 });
 
 const AddBook = (props: AddBookProps) => {
@@ -42,6 +36,7 @@ const AddBook = (props: AddBookProps) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       isbn: "",
+      types: [props.defaultType],
     },
   });
 
@@ -50,28 +45,46 @@ const AddBook = (props: AddBookProps) => {
   }
 
   return (
-    <div className="relative">
+    <div className="relative flex">
       <Form {...form}>
         <form
           className="flex flex-1 flex-col justify-between"
           onSubmit={form.handleSubmit(onSubmit)}
         >
-          <FormField
-            control={form.control}
-            name="isbn"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>ISBN</FormLabel>
-                <FormControl>
-                  <Input placeholder="isbn" {...field} />
-                </FormControl>
-                <FormDescription>
-                  The ISBN from the Book to add.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div>
+            <FormField
+              control={form.control}
+              name="isbn"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ISBN</FormLabel>
+                  <FormControl>
+                    <Input placeholder="isbn" {...field} />
+                  </FormControl>
+                  <FormDescription hidden>
+                    The ISBN from the Book to add.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="types"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Types</FormLabel>
+                  <FormControl>
+                    <BookTypeSelect {...field} />
+                  </FormControl>
+                  <FormDescription hidden>
+                    Type of Book in the Episode
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <Button className="w-full" type="submit">
             Submit
           </Button>

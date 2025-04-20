@@ -24,8 +24,7 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandItem,
-  CommandList,
-  CommandSeparator,
+  CommandList
 } from "@/components/ui/command";
 
 /**

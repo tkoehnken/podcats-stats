@@ -7,7 +7,12 @@ import * as BookApi from "@/server/internal/bookApi";
 
 export const bookRouter = createTRPCRouter({
   getByISBN: publicProcedure
-    .input(z.object({ isbn: z.string() }))
+    .input(
+      z.object({
+        isbn: z.string(),
+        types: z.array(z.enum(["main", "preview", "next"])).nonempty().max(3),
+      }),
+    )
     .mutation(async ({ input }): Promise<Book> => {
       const cached = await db
         .collection("books")
@@ -40,7 +45,7 @@ export const bookRouter = createTRPCRouter({
         isbn: result.identifier,
         authors,
         title: result.title,
-        types: [],
+        types: input.types,
         releaseDate: Date.parse(
           result.publicationDate.substring(0, 4) +
             "-" +

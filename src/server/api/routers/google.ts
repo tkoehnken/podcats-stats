@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { db } from "@/server/firebase/util";
-import {type ListOfBookTypes, type ListOfEpisodeTypes} from "@/lib/utils";
+import {type ListOfBookTypes, type ListOfEpisodeTypes, type ListOfSocials} from "@/lib/utils";
 
 export type EpisodeTypes = typeof ListOfEpisodeTypes[number];
 export type BookTypes = typeof ListOfBookTypes[number];
@@ -16,9 +16,11 @@ export type Book = {
     description: string
 }
 
+export type Social = typeof ListOfSocials[number];
+
 export type Guest = {
     name: string,
-    links?: {url: string,icon?: string}[],
+    links?: {url: string,icon: Social}[],
     img?: string
 }
 

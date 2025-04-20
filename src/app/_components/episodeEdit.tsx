@@ -4,10 +4,11 @@ import Image from "next/image";
 import type { EpisodeType } from "@/server/api/routers/spotify";
 import EpisodeTypeSelect from "@/components/EpisodeTypeSelect";
 import { useState } from "react";
-import type { EpisodeTypes } from "@/server/api/routers/google";
+import type {EpisodeTypes, ExtraDataType} from "@/server/api/routers/google";
 import AddBook from "@/components/AddBook";
 import Book from "@/components/Book";
 import { type Book as BookType } from "@/server/api/routers/google";
+import IntroductionEdit from "@/components/IntroductionEdit";
 
 type EpisodeEditProps = {
   data: EpisodeType;
@@ -17,15 +18,17 @@ const EpisodeEdit = ({ data }: EpisodeEditProps) => {
   const img = getBiggestImage(data.images);
   const [episodeType, setEpisodeType] = useState<EpisodeTypes[]>(["classic"]);
   const [books, setBooks] = useState<BookType[]>(data.extraData?.books ?? []);
+  const [introduction,setIntroduction] = useState<Required<ExtraDataType>["introduction"]>(data.extraData?.introduction??{anne: undefined,fabienne: undefined});
   return (
-    <div className="flex flex-col gap-15">
+    <div className="flex flex-col gap-15 pb-4">
       <div className="flex flex-row gap-1">
         <Image src={img.url} alt="Cover" height={400} width={400} />
-        <div>
+        <div className="flex flex-col gap-2">
           <h1 className="text-xl">{data.name}</h1>
           <div className="max-w-400">
-            <EpisodeTypeSelect values={episodeType} onChange={setEpisodeType} />
+            <EpisodeTypeSelect value={episodeType} onChange={setEpisodeType} />
           </div>
+            <IntroductionEdit value={introduction} onChange={setIntroduction} />
           <p>{data.description}</p>
         </div>
       </div>
@@ -38,6 +41,7 @@ const EpisodeEdit = ({ data }: EpisodeEditProps) => {
             addBook={(book) => {
               setBooks((old) => [...old, book]);
             }}
+            defaultType={episodeType.includes("preview") ? "preview" : "main"}
           />
         </div>
       </div>

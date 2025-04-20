@@ -13,3 +13,4 @@ export function getBiggestImage(images: SpotifyApi.ImageObject[]){
 
 export const ListOfEpisodeTypes = ["classic", "guest", "preview"] as const;
 export const ListOfBookTypes = ["main","preview","next"] as const;
+export const ListOfSocials = ["youtube","twitch","x"] as const;

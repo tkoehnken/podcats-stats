@@ -8,7 +8,7 @@ import {MultiSelect} from "@/components/ui/multi-select";
 
 type EpisodeTypeSelectProps = {
     onChange: (types: EpisodeTypes[])=>void,
-    values: EpisodeTypes[]
+    value: EpisodeTypes[]
 }
 
 const EpisodeTypeSelect = (props: EpisodeTypeSelectProps) => (
@@ -17,7 +17,7 @@ const EpisodeTypeSelect = (props: EpisodeTypeSelectProps) => (
                 {label: type, value: type,icon: type==="guest"?PersonIcon:type==="preview"?ClockIcon:ComponentInstanceIcon})
             )}
             onValueChange={(types)=>props.onChange(types as EpisodeTypes[])}
-            defaultValue={props.values}
+            defaultValue={props.value}
             placeholder="Select type"
             variant="inverted"
         />
