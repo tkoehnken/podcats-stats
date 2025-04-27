@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import SocialIcon from "@/components/SocialIcon";
 import type { ExtraDataType } from "@/server/api/routers/google";
@@ -15,15 +14,6 @@ const GuestList = (props: Props) => (
         className="flex flex-row items-center justify-between gap-2"
       >
         <div className="flex flex-row gap-2">
-          {guest.img ? (
-            <Image
-              className="rounded-full"
-              width={40}
-              height={40}
-              src={guest.img}
-              alt={`Image of ${guest.name}`}
-            />
-          ) : null}
           <div>{guest.name}</div>
         </div>
         <div className="flex flex-row gap-2">

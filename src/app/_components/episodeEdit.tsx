@@ -24,7 +24,6 @@ type EpisodeEditProps = {
 
 const EpisodeEdit = ({ data }: EpisodeEditProps) => {
   const img = getBiggestImage(data.images);
-  console.log("Data",data,data.extraData)
   const [episodeType, setEpisodeType] = useState<EpisodeTypes[]>(data.extraData?.types??["classic"]);
   const [books, setBooks] = useState<EpisodeBookType[]>(
     data.extraData?.books ?? [],

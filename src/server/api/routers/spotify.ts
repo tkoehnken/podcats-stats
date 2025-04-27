@@ -73,7 +73,7 @@ const execSpotify = async <T extends Paths>(
   path: T,
   ...cacheTags: string[]
 ): Promise<GetPathResponse<T>> => {
-  const response = await rawSpotifyRequest(`${baseURL}${path}`, cacheTags);
+  const response = await rawSpotifyRequest(`${baseURL}${path}` , cacheTags);
 
   if (response.ok) {
     return (await response.json()) as GetPathResponse<T>;
@@ -85,7 +85,7 @@ const execSpotify = async <T extends Paths>(
 
 export const getShow = async (): Promise<SpotifyApi.ShowObject> => {
   const path: ShowPath = `shows/1MLK42q9YcHVVu8IM8cOdw`;
-  return await execSpotify(path, "show");
+  return await execSpotify(path , "show");
 };
 
 export type EpisodeType = SpotifyApi.EpisodeObjectSimplified & {
@@ -112,13 +112,14 @@ const enrichEpisodeData = async (
   episodes: SpotifyApi.EpisodeObjectSimplified[],
 ): Promise<EpisodeType[]> => {
   const moreData: EpisodeType[] = [...episodes];
-  const chunks = chunkArray(moreData);
+  const chunkSize = 10;
+  const chunks = chunkArray(moreData,chunkSize);
   for (let i = 0; i < chunks.length; ++i) {
     const chunk = chunks[i];
     if (chunk) {
       await Promise.all(
         chunk.map(async (_, index) => {
-          const ep = moreData[index + i * index];
+          const ep = moreData[index + (i * chunkSize)];
           if (ep) {
             ep.extraData = await getExtraDataForEpisode(ep.id);
           }
@@ -126,7 +127,6 @@ const enrichEpisodeData = async (
       );
     }
   }
-  console.log("Modre Data",moreData.map(({id,extraData})=>({id,extraData})))
   return moreData;
 };
 
@@ -135,7 +135,7 @@ export const getAllShowInfos = async (): Promise<ShowType> => {
   let episodeUrl = show.episodes.next;
   const episodes = show.episodes.items;
   while (episodeUrl !== null) {
-    const ep = await rawSpotifyRequest(episodeUrl, [episodeUrl]);
+    const ep = await rawSpotifyRequest(episodeUrl , [episodeUrl]);
     if (!ep.ok)
       throw Error(`Failed ${episodeUrl} [${ep.status}]: ${ep.statusText}`);
     const epData = (await ep.json()) as SpotifyApi.ShowEpisodesResponse;

@@ -91,6 +91,7 @@ export const ProductDetailsSchema = z.object({
 export const getByISBN = async (isbn: string) => {
     const link = `https://buchhandel.de/jsonapi/productDetails/${isbn.replaceAll('-', '')}`;
     const response = await fetch(link);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const json = await response.json();
     return {...ProductDetailsSchema.parse(json),link};
 }

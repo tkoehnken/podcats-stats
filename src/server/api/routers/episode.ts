@@ -4,7 +4,7 @@ import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { db } from "@/server/firebase/util";
 import { typesSchema } from "@/lib/zodSchemas";
 import { ListOfEpisodeTypes } from "@/lib/utils";
-import { revalidateTag } from "next/cache";
+import {revalidatePath, revalidateTag} from "next/cache";
 
 export const episodeRouter = createTRPCRouter({
   save: publicProcedure
@@ -25,5 +25,8 @@ export const episodeRouter = createTRPCRouter({
         types: input.episodeType,
       },{merge: true});
       revalidateTag(input.id);
+      //revalidatePath(`/episodes/${input.id}`,"page");
+      revalidatePath(`/episodes/${input.id}/edit`,"page");
+      //revalidatePath(`/`,"page");
     }),
 });

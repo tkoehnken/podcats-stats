@@ -1,10 +1,10 @@
-import { unstable_cache } from "next/cache";
 import { db } from "@/server/firebase/util";
 import {
   type ListOfBookTypes,
   type ListOfEpisodeTypes,
   type ListOfSocials,
 } from "@/lib/utils";
+import { unstable_cache } from "next/cache";
 
 export type EpisodeTypes = (typeof ListOfEpisodeTypes)[number];
 export type BookTypes = (typeof ListOfBookTypes)[number];
@@ -49,37 +49,42 @@ export type ExtraDataType = {
   };
 };
 
-export const getGuestById = (id: string) =>
-  unstable_cache(
-    async (id: string): Promise<Guest | undefined> => {
+export const getGuestById = (id: string) => {
+  return unstable_cache(
+    async () => {
       const document = await db.collection("guest").doc(id).get();
+
       const data = document.data();
       if (data) return { ...data, id } as Guest;
       return undefined;
     },
     ["guests", id],
     { tags: ["guests", id] },
-  )(id);
+  )();
+};
 
-export const getBookById = (isbn: string) =>
-  unstable_cache(
-    async (id: string) => {
-      const document = await db.collection("books").doc(id).get();
+export const getBookById = async (isbn: string) => {
+  return unstable_cache(
+    async () => {
+      const document = await db
+        .collection("books")
+        .doc(isbn.replaceAll("-", ""))
+        .get();
       const data = document.data();
       if (data) return data as Book;
       return undefined;
     },
     ["books", isbn],
     { tags: ["books", isbn] },
-  )(isbn);
+  )();
+};
 
-export const getExtraDataForEpisode = (id: string) =>
-  unstable_cache(
-    async (id: string): Promise<ExtraDataType | undefined> => {
-
+export const getExtraDataForEpisode = async (id: string) => {
+  return unstable_cache(
+    async () => {
+        console.log("Load ep",id)
       const document = await db.collection("episodes").doc(id).get();
       const data = document.data();
-        console.log("Get data for episode", id,data);
       if (data) {
         const d = data as InternalEpisode;
         return {
@@ -117,4 +122,5 @@ export const getExtraDataForEpisode = (id: string) =>
     },
     ["episodes", id],
     { tags: ["episodes", id] },
-  )(id);
+  )();
+};

@@ -15,13 +15,8 @@ export const guestRouter = createTRPCRouter({
       if (cached.size >= 1) {
         return;
       }
-      const guest: Guest = {
+      const guest: Omit<Guest, "id"> = {
         name: input.name,
-        img: input.img
-          ? input.img.length === 0
-            ? undefined
-            : input.img
-          : input.img,
         links: [],
       };
       ListOfSocials.forEach((social) => {
@@ -33,6 +28,8 @@ export const guestRouter = createTRPCRouter({
     }),
   getAllGuests: publicProcedure.query(async (): Promise<Guest[]> => {
     const data = await db.collection("guest").get();
-    return (data.docs.map((doc) => doc.data()) as Guest[]) ?? [];
+    return (
+      (data.docs.map((doc) => ({ ...doc.data(), id: doc.id })) as Guest[]) ?? []
+    );
   }),
 });

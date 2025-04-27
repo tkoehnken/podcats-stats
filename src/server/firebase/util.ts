@@ -9,6 +9,7 @@ import { getFirestore } from "firebase-admin/firestore";
 const init = () => {
   try {
     return getApp();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_e) {
     initializeApp({
       credential: cert({
