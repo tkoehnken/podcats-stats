@@ -26,6 +26,7 @@ const init = () => {
         universe_domain: "googleapis.com",
       } as ServiceAccount),
     });
+    getFirestore().settings({ ignoreUndefinedProperties: true });
     return getApp();
   }
 };

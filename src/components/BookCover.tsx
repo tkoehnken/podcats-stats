@@ -6,6 +6,7 @@ type BookCoverProps = {
   width?: number;
   height?: number;
   animated?: boolean;
+  maxTitleCharsPerLine?: number;
 };
 
 const BookCover: React.FC<BookCoverProps> = ({
@@ -14,7 +15,34 @@ const BookCover: React.FC<BookCoverProps> = ({
   width = 300,
   height = 450,
   animated = false,
+  maxTitleCharsPerLine = 20,
 }) => {
+  // Split title into lines based on character limit
+  const wrapTitle = (text: string, maxChars: number): string[] => {
+    const words = text.split(" ");
+    const lines: string[] = [];
+    let currentLine = "";
+
+    words.forEach((word) => {
+      if ((currentLine + " " + word).trim().length <= maxChars) {
+        currentLine += ` ${word}`;
+      } else {
+        lines.push(currentLine.trim());
+        currentLine = word;
+      }
+    });
+
+    if (currentLine) {
+      lines.push(currentLine.trim());
+    }
+
+    return lines;
+  };
+
+  const titleLines = wrapTitle(title, maxTitleCharsPerLine);
+  const titleFontSize = 18;
+  const titleStartY = height / 2 - (titleLines.length * titleFontSize) / 2;
+
   return (
     <svg
       width={width}
@@ -55,19 +83,22 @@ const BookCover: React.FC<BookCoverProps> = ({
       {/* Background */}
       <rect width="100%" height="100%" fill="url(#bgGradient)" rx="16" />
 
-      {/* Title */}
-      <text
-        x="50%"
-        y="50%"
-        textAnchor="middle"
-        dominantBaseline="middle"
-        fontSize="24"
-        fill="#f1f5f9"
-        fontFamily="'Georgia', serif"
-        fontWeight="bold"
-      >
-        {title}
-      </text>
+      {/* Title (multiline) */}
+      {titleLines.map((line, index) => (
+          <text
+              key={index}
+              x="50%"
+              y={titleStartY + index * (titleFontSize + 6)}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize={titleFontSize}
+              fill="#f1f5f9"
+              fontFamily="'Georgia', serif"
+              fontWeight="bold"
+          >
+            {line}
+          </text>
+      ))}
 
       {/* Authors */}
       {authors.map((author, index) => (

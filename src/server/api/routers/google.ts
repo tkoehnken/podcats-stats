@@ -22,6 +22,7 @@ export type Book = {
 export type Social = (typeof ListOfSocials)[number];
 
 export type Guest = {
+  id: string;
   name: string;
   links?: { url: string; icon: Social }[];
 };
@@ -36,10 +37,12 @@ type InternalEpisode = {
   };
 };
 
+export type EpisodeBookType = Book & { types?: BookTypes[] };
+
 export type ExtraDataType = {
   types?: EpisodeTypes[];
   guests?: Guest[];
-  books?: (Book & { types: BookTypes[] })[];
+  books?: EpisodeBookType[];
   introduction?: {
     anne?: string;
     fabienne?: string;
@@ -51,7 +54,7 @@ export const getGuestById = (id: string) =>
     async (id: string): Promise<Guest | undefined> => {
       const document = await db.collection("guest").doc(id).get();
       const data = document.data();
-      if (data) return data as Guest;
+      if (data) return { ...data, id } as Guest;
       return undefined;
     },
     ["guests", id],
@@ -73,8 +76,10 @@ export const getBookById = (isbn: string) =>
 export const getExtraDataForEpisode = (id: string) =>
   unstable_cache(
     async (id: string): Promise<ExtraDataType | undefined> => {
+
       const document = await db.collection("episodes").doc(id).get();
       const data = document.data();
+        console.log("Get data for episode", id,data);
       if (data) {
         const d = data as InternalEpisode;
         return {

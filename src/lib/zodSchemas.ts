@@ -11,7 +11,7 @@ export const isbnSchema = z.string().refine(
     },
 );
 
-export const typesSchema = z.array(z.enum(ListOfBookTypes)).nonempty().max(3)
+export const typesSchema = z.array(z.enum(ListOfBookTypes)).max(3)
 
 export const guestSchema = z.object({
     name: z.string().min(3),
