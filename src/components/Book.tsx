@@ -1,5 +1,5 @@
-import Image from "next/image";
 import type { Book as BookType } from "@/server/api/routers/google";
+import BookCover from "@/components/BookCover";
 
 type BookProps = {
   data: BookType;
@@ -9,11 +9,13 @@ type BookProps = {
 
 const Book = (props: BookProps) => (
   <div>
-    <Image
-      src={props.data.cover}
+    <BookCover
+      title={props.data.title}
+      authors={props.data.authors.map(
+        ({ firstname, lastname }) => `${firstname} ${lastname}`,
+      )}
       width={props.width}
       height={props.height ?? props.width * 1.5}
-      alt={`Cover of ${props.data.title}`}
     />
   </div>
 );

@@ -14,7 +14,6 @@ export const isbnSchema = z.string().refine(
 export const typesSchema = z.array(z.enum(ListOfBookTypes)).nonempty().max(3)
 
 export const guestSchema = z.object({
-    img: z.string().url(),
     name: z.string().min(3),
     youtube: z.string().url().optional(),
     twitch: z.string().url().optional(),

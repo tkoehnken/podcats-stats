@@ -31,4 +31,8 @@ export const guestRouter = createTRPCRouter({
       });
       await db.collection("guest").add(guest);
     }),
+  getAllGuests: publicProcedure.query(async (): Promise<Guest[]> => {
+    const data = await db.collection("guest").get();
+    return (data.docs.map((doc) => doc.data()) as Guest[]) ?? [];
+  }),
 });

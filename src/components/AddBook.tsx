@@ -16,8 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { api } from "@/trpc/react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { isbnSchema, typesSchema } from "@/lib/zodSchemas";
-import BookTypeSelect from "@/components/BookTypeSelect";
+import { isbnSchema } from "@/lib/zodSchemas";
 
 type AddBookProps = {
   addBook: (book: Book) => void;
@@ -26,7 +25,6 @@ type AddBookProps = {
 
 const formSchema = z.object({
   isbn: isbnSchema,
-  types: typesSchema,
 });
 
 const AddBook = (props: AddBookProps) => {
@@ -36,7 +34,6 @@ const AddBook = (props: AddBookProps) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       isbn: "",
-      types: [props.defaultType],
     },
   });
 
@@ -63,22 +60,6 @@ const AddBook = (props: AddBookProps) => {
                   </FormControl>
                   <FormDescription hidden>
                     The ISBN from the Book to add.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="types"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Types</FormLabel>
-                  <FormControl>
-                    <BookTypeSelect {...field} />
-                  </FormControl>
-                  <FormDescription hidden>
-                    Type of Book in the Episode
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

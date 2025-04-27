@@ -1,6 +1,13 @@
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";;
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { ListOfSocials } from "@/lib/utils";
 import { type z } from "zod";
 import { useForm } from "react-hook-form";
@@ -14,23 +21,21 @@ import {
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import SocialIcon from "@/components/SocialIcon";
-import {guestSchema} from "@/lib/zodSchemas";
-import {api} from "@/trpc/react";
+import { guestSchema } from "@/lib/zodSchemas";
+import { api } from "@/trpc/react";
 
-
-const GuestEdit = () => {
-    const { mutateAsync } = api.guest.addNewGuest.useMutation();
+const GuestAdd = () => {
+  const { mutateAsync } = api.guest.addNewGuest.useMutation();
   const form = useForm<z.infer<typeof guestSchema>>({
     resolver: zodResolver(guestSchema),
     defaultValues: {
-      img: "",
       name: "",
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof guestSchema>)=> {
-      await mutateAsync(values)
-  }
+  const onSubmit = async (values: z.infer<typeof guestSchema>) => {
+    await mutateAsync(values);
+  };
 
   return (
     <Dialog>
@@ -38,6 +43,9 @@ const GuestEdit = () => {
         <Button>New Guest</Button>
       </DialogTrigger>
       <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add Guest</DialogTitle>
+        </DialogHeader>
         <Form {...form}>
           <form
             className="flex flex-col gap-2"
@@ -45,23 +53,10 @@ const GuestEdit = () => {
           >
             <FormField
               control={form.control}
-              name="img"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://img.url.de" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Name" {...field} />
                   </FormControl>
@@ -69,9 +64,12 @@ const GuestEdit = () => {
                 </FormItem>
               )}
             />
-            <div className="gab-2 flex flex-col">
+            <div className="flex flex-col gap-2">
               {ListOfSocials.map((social) => (
-                <div key={social} className="flex flex-row gap-2.5">
+                <div
+                  key={social}
+                  className="flex flex-row items-center gap-2.5"
+                >
                   <SocialIcon icon={social} />
                   <FormField
                     control={form.control}
@@ -91,6 +89,7 @@ const GuestEdit = () => {
                 </div>
               ))}
             </div>
+            <Button type="submit">Add</Button>
           </form>
         </Form>
       </DialogContent>
@@ -98,4 +97,4 @@ const GuestEdit = () => {
   );
 };
 
-export default GuestEdit;
+export default GuestAdd;

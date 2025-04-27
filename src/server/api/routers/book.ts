@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import type { Book } from "@/server/api/routers/google";
+import {type Book, getBookById} from "@/server/api/routers/google";
 import { db } from "@/server/firebase/util";
 import * as BookApi from "@/server/internal/bookApi";
 
@@ -9,17 +9,13 @@ export const bookRouter = createTRPCRouter({
   getByISBN: publicProcedure
     .input(
       z.object({
-        isbn: z.string(),
-        types: z.array(z.enum(["main", "preview", "next"])).nonempty().max(3),
+        isbn: z.string()
       }),
     )
     .mutation(async ({ input }): Promise<Book> => {
-      const cached = await db
-        .collection("books")
-        .where("isbn", "==", input.isbn)
-        .get();
-      if (cached.size === 1 && cached.docs[0]) {
-        return cached.docs[0].data() as Book;
+      const cached = await getBookById(input.isbn.replaceAll('-', ''));
+      if (cached) {
+        return cached;
       }
 
       const result = await BookApi.getByISBN(input.isbn);
@@ -45,7 +41,6 @@ export const bookRouter = createTRPCRouter({
         isbn: result.identifier,
         authors,
         title: result.title,
-        types: input.types,
         releaseDate: Date.parse(
           result.publicationDate.substring(0, 4) +
             "-" +

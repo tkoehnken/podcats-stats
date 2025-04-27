@@ -120,7 +120,7 @@ const enrichEpisodeData = async (
         chunk.map(async (_, index) => {
           const ep = moreData[index + i * index];
           if (ep) {
-            ep.extraData = await getExtraDataForEpisode(ep.id)();
+            ep.extraData = await getExtraDataForEpisode(ep.id);
           }
         }),
       );
