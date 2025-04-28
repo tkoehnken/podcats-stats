@@ -6,12 +6,16 @@ import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
-    experimental: {
-        reactCompiler: true,
-    },
-    images: {
-        remotePatterns: [{hostname: 'i.scdn.co'}],
-    },
+  experimental: {
+    reactCompiler: true,
+  },
+  images: {
+    remotePatterns: [{ hostname: "i.scdn.co" }],
+  },
+  i18n: {
+    locales: ["de"],
+    defaultLocale: "de"
+  },
 };
 
 export default config;

@@ -25,7 +25,7 @@ export const metadata: Metadata = {
       media: "(prefers-color-scheme: dark)",
     },
     { rel: "icon", url: "/podcat.png", media: "(prefers-color-scheme: light)" },
-  ],
+  ]
 };
 
 const geist = Geist({
@@ -38,7 +38,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${geist.variable}`}>
+      <html lang="de" className={`${geist.variable}`}>
         <body className="from-background to-primary bg-linear-to-r from-15% to-150%">
           <ThemeProvider
             attribute="class"
