@@ -37,7 +37,7 @@ type InternalEpisode = {
   };
 };
 
-export type EpisodeBookType = Book & { types?: BookTypes[],presenter?: string };
+export type EpisodeBookType = Book & { types?: BookTypes[],presenter?: "Anne"|"Fabienne" };
 
 export type ExtraDataType = {
   types?: EpisodeTypes[];

@@ -11,11 +11,7 @@ const config = {
   },
   images: {
     remotePatterns: [{ hostname: "i.scdn.co" }],
-  },
-  i18n: {
-    locales: ["de"],
-    defaultLocale: "de"
-  },
+  }
 };
 
 export default config;

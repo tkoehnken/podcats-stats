@@ -13,7 +13,7 @@ export const episodeRouter = createTRPCRouter({
         id: z.string(),
         episodeType: z.array(z.enum(ListOfEpisodeTypes)).optional(),
         books: z
-          .array(z.object({ id: z.string(), types: typesSchema }))
+          .array(z.object({ id: z.string(), types: typesSchema,presenter: z.enum(["Anne","Fabienne"]).optional() }))
           .optional(),
         guests: z.array(z.string()).optional(),
       }),
@@ -22,7 +22,7 @@ export const episodeRouter = createTRPCRouter({
       await db.collection("episodes").doc(input.id).set({
         books: input.books,
         guests: input.guests,
-        types: input.episodeType,
+        types: input.episodeType
       },{merge: true});
       revalidateTag(input.id);
       //revalidatePath(`/episodes/${input.id}`,"page");

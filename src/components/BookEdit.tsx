@@ -11,7 +11,7 @@ type BookProps = {
   height?: number;
   removeBook: (book: EpisodeBookType) => void;
   onChangeTypes: (bookTypes: BookTypes[]) => void;
-  onChangePresenter: (presenter?: string) => void;
+  onChangePresenter: (presenter?: "Anne"|"Fabienne") => void;
 };
 
 const BookEdit = (props: BookProps) => (

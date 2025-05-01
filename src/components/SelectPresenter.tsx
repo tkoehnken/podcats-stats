@@ -10,7 +10,7 @@ import {
 
 type Props = {
   value?: string;
-  onValueChange: (value: Props["value"]) => void;
+  onValueChange: (value: "Anne"|"Fabienne") => void;
 };
 
 const SelectPresenter = (props: Props) => (

@@ -42,7 +42,7 @@ const EpisodeEdit = ({ data }: EpisodeEditProps) => {
   const onSave = async () => {
     await mutateAsync({
       id: data.id,
-      books: books.map((book) => ({ id: book.id, types: book.types ?? [] })),
+      books: books.map((book) => ({ id: book.id, types: book.types ?? [],presenter: book.presenter })),
       guests: guests.length > 0 ? guests.map(({ id }) => id) : undefined,
       episodeType: episodeType,
     });
@@ -89,6 +89,15 @@ const EpisodeEdit = ({ data }: EpisodeEditProps) => {
                 const elm = tmp.find(({ id }) => id === book.id);
                 if (!elm) return oldBooks;
                 elm.types = types;
+                return tmp;
+              });
+            }}
+            onChangePresenter={(presenter)=>{
+              setBooks((oldBooks) => {
+                const tmp = [...oldBooks];
+                const elm = tmp.find(({ id }) => id === book.id);
+                if (!elm) return oldBooks;
+                elm.presenter = presenter;
                 return tmp;
               });
             }}
