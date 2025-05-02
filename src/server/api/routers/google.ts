@@ -120,7 +120,7 @@ export const getExtraDataForEpisode = async (id: string) => {
       }
       return undefined;
     },
-    ["episodes", id],
+    [id],
     { tags: ["episodes", id] },
   )();
 };

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { getBiggestImage } from "@/lib/utils";
-import BookCoverV2 from "@/components/BookCoverV2";
 import type { EpisodeType } from "@/server/api/routers/spotify";
 import Book from "@/components/Book";
 import {

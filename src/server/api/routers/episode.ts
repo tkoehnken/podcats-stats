@@ -4,7 +4,9 @@ import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { db } from "@/server/firebase/util";
 import { typesSchema } from "@/lib/zodSchemas";
 import { ListOfEpisodeTypes } from "@/lib/utils";
-import {revalidatePath, revalidateTag} from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cacheTag, unstable_expirePath } from "next/cache";
+import { getEpisode } from "@/server/api/routers/spotify";
+import { unstable_expireTag } from "next/dist/server/web/spec-extension/revalidate";
 
 export const episodeRouter = createTRPCRouter({
   save: publicProcedure
@@ -13,20 +15,45 @@ export const episodeRouter = createTRPCRouter({
         id: z.string(),
         episodeType: z.array(z.enum(ListOfEpisodeTypes)).optional(),
         books: z
-          .array(z.object({ id: z.string(), types: typesSchema,presenter: z.enum(["Anne","Fabienne"]).optional() }))
+          .array(
+            z.object({
+              id: z.string(),
+              types: typesSchema,
+              presenter: z.enum(["Anne", "Fabienne"]).optional(),
+            }),
+          )
           .optional(),
         guests: z.array(z.string()).optional(),
       }),
     )
     .mutation(async ({ input }): Promise<void> => {
-      await db.collection("episodes").doc(input.id).set({
-        books: input.books,
-        guests: input.guests,
-        types: input.episodeType
-      },{merge: true});
+      await db.collection("episodes").doc(input.id).set(
+        {
+          books: input.books,
+          guests: input.guests,
+          types: input.episodeType,
+        },
+        { merge: true },
+      );
       revalidateTag(input.id);
       //revalidatePath(`/episodes/${input.id}`,"page");
-      revalidatePath(`/episodes/${input.id}/edit`,"page");
+      revalidatePath(`/episodes/${input.id}/edit`, "page");
       //revalidatePath(`/`,"page");
+    }),
+  reload: publicProcedure
+    .input(z.string())
+    .mutation(async ({ input }): Promise<void> => {
+      const ep = await getEpisode(input);
+      ep.extraData?.books?.forEach((book) => {
+        unstable_expireTag(book.id);
+        //console.log("revalidateTag","book",book.id)
+      });
+      unstable_expireTag("episodes",input);
+      unstable_expirePath(`/episodes/${input}/edit`,"page");
+      /*
+      console.log("revalidateTag","ep",input)
+
+      console.log("revalidateTag","page",`/episodes/${input}/edit`)
+      revalidateTag("episodes")*/
     }),
 });

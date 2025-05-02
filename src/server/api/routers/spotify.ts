@@ -1,5 +1,3 @@
-//import "@types/spotify-api";
-
 import {
   type ExtraDataType,
   getExtraDataForEpisode,
@@ -64,8 +62,9 @@ const rawSpotifyRequest = async (
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    next: { tags },
+    next: { tags,revalidate: false },
     cache: "force-cache",
+
   });
 };
 
@@ -73,7 +72,7 @@ const execSpotify = async <T extends Paths>(
   path: T,
   ...cacheTags: string[]
 ): Promise<GetPathResponse<T>> => {
-  const response = await rawSpotifyRequest(`${baseURL}${path}` , cacheTags);
+  const response = await rawSpotifyRequest(`${baseURL}${path}` , ["spotify",...cacheTags]);
 
   if (response.ok) {
     return (await response.json()) as GetPathResponse<T>;
@@ -151,9 +150,15 @@ export const getAllShowInfos = async (): Promise<ShowType> => {
   };
 };
 
+/**
+ * Load all Episodes and search for id.
+ * Its done this way to not have a request for each Episode if all the Episode data
+ * is already in the cache.
+ * @param id
+ */
 export const getEpisode = async (
   id: string,
-): Promise<SpotifyApi.EpisodeObjectSimplified> => {
+): Promise<EpisodeType> => {
   const info = await getAllShowInfos();
   const episode = info.episodes.filter((ep) => ep.id === id);
   if (episode.length === 0) throw Error(`No episodes found with id ${id}`);
