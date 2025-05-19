@@ -18,7 +18,6 @@ import BookEdit from "@/components/BookEdit";
 import { Button } from "@/components/ui/button";
 import { api } from "@/trpc/react";
 import { RefreshCcw } from "lucide-react";
-import { router } from "next/client";
 
 type EpisodeEditProps = {
   data: EpisodeType;
@@ -55,12 +54,12 @@ const EpisodeEdit = ({ data }: EpisodeEditProps) => {
       })),
       guests: guests.length > 0 ? guests.map(({ id }) => id) : undefined,
       episodeType: episodeType,
+      introduction: introduction,
     });
   };
 
   const onReloadEp = async () => {
     await reloadEp(data.id);
-    router.reload()
   };
 
   return (

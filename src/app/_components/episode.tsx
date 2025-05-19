@@ -15,6 +15,11 @@ export default function Episode({ data }: EpisodeProps) {
       <Image src={img.url} alt="Cover" height={400} width={400} />
       <div>
         <h1 className="text-xl">{data.name}</h1>
+        <div>
+          <div>
+            Anne: {data.extraData?.introduction?.anne??"404"}
+          </div>
+        </div>
         <p>{data.description}</p>
         {data.extraData ? <ExtraData {...data.extraData} /> : null}
       </div>

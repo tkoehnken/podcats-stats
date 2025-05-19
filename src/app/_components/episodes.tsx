@@ -66,6 +66,9 @@ const Episode = (props: EpisodeProps) => {
               <Link href={`/episodes/${props.data.id}`}>
                 <h3 className="text-2xl">{props.data.name}</h3>
               </Link>
+              <div>
+                Anne {props.data.extraData?.introduction?.anne??"404"}
+              </div>
               <article className="whitespace-pre-wrap">
                 {props.data.description}
               </article>

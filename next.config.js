@@ -8,8 +8,8 @@ import "./src/env.js";
 const config = {
   experimental: {
     reactCompiler: true,
-    dynamicIO: true,
-    useCache: true,
+    dynamicIO: false,
+    useCache: false,
   },
   images: {
     remotePatterns: [{ hostname: "i.scdn.co" }],
