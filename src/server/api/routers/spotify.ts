@@ -54,25 +54,20 @@ type GetPathResponse<T extends Paths> = T extends ShowPath
   : never;
 
 const rawSpotifyRequest = async (
-  path: string,
-  tags: string[],
+  path: string
 ): Promise<Response> => {
   const token = await getAuthToken();
   return await fetch(path, {
     headers: {
       Authorization: `Bearer ${token}`,
-    },
-    next: { tags,revalidate: false },
-    cache: "force-cache",
-
+    }
   });
 };
 
 const execSpotify = async <T extends Paths>(
-  path: T,
-  ...cacheTags: string[]
+  path: T
 ): Promise<GetPathResponse<T>> => {
-  const response = await rawSpotifyRequest(`${baseURL}${path}` , ["spotify",...cacheTags]);
+  const response = await rawSpotifyRequest(`${baseURL}${path}`);
 
   if (response.ok) {
     return (await response.json()) as GetPathResponse<T>;
@@ -84,7 +79,7 @@ const execSpotify = async <T extends Paths>(
 
 export const getShow = async (): Promise<SpotifyApi.ShowObject> => {
   const path: ShowPath = `shows/1MLK42q9YcHVVu8IM8cOdw`;
-  return await execSpotify(path , "show");
+  return await execSpotify(path);
 };
 
 export type EpisodeType = SpotifyApi.EpisodeObjectSimplified & {
@@ -112,13 +107,13 @@ const enrichEpisodeData = async (
 ): Promise<EpisodeType[]> => {
   const moreData: EpisodeType[] = [...episodes];
   const chunkSize = 10;
-  const chunks = chunkArray(moreData,chunkSize);
+  const chunks = chunkArray(moreData, chunkSize);
   for (let i = 0; i < chunks.length; ++i) {
     const chunk = chunks[i];
     if (chunk) {
       await Promise.all(
         chunk.map(async (_, index) => {
-          const ep = moreData[index + (i * chunkSize)];
+          const ep = moreData[index + i * chunkSize];
           if (ep) {
             ep.extraData = await getExtraDataForEpisode(ep.id);
           }
@@ -134,7 +129,7 @@ export const getAllShowInfos = async (): Promise<ShowType> => {
   let episodeUrl = show.episodes.next;
   const episodes = show.episodes.items;
   while (episodeUrl !== null) {
-    const ep = await rawSpotifyRequest(episodeUrl , [episodeUrl]);
+    const ep = await rawSpotifyRequest(episodeUrl);
     if (!ep.ok)
       throw Error(`Failed ${episodeUrl} [${ep.status}]: ${ep.statusText}`);
     const epData = (await ep.json()) as SpotifyApi.ShowEpisodesResponse;
@@ -156,13 +151,11 @@ export const getAllShowInfos = async (): Promise<ShowType> => {
  * is already in the cache.
  * @param id
  */
-export const getEpisode = async (
-  id: string,
-): Promise<EpisodeType> => {
+export const getEpisode = async (id: string): Promise<EpisodeType&{date: number}> => {
   const info = await getAllShowInfos();
   const episode = info.episodes.filter((ep) => ep.id === id);
   if (episode.length === 0) throw Error(`No episodes found with id ${id}`);
   const ep = episode[0];
   if (ep == undefined) throw Error(`No episodes found with id ${id}`);
-  return ep;
+  return {...ep,date: Date.now()};
 };

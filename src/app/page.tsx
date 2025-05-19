@@ -1,7 +1,9 @@
+"use server"
 import { getAllShowInfos } from "@/server/api/routers/spotify";
 import Episodes from "@/app/_components/episodes";
 
 export default async function Home() {
+
   const show = await getAllShowInfos();
 
   return (

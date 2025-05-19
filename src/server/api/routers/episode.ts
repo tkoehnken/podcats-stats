@@ -42,7 +42,7 @@ export const episodeRouter = createTRPCRouter({
   reload: publicProcedure
     .input(z.string())
     .mutation(async ({ input }): Promise<void> => {
-      //const ep = await getEpisode(input);
+      const ep = await getEpisode(input);
       /*ep.extraData?.books?.forEach((book) => {
 
       });*/

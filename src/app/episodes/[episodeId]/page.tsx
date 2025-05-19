@@ -1,5 +1,7 @@
+"use server"
 import { getAllShowInfos, getEpisode } from "@/server/api/routers/spotify";
 import Episode from "@/app/_components/episode";
+import type { Metadata } from "next";
 
 export async function generateStaticParams() {
   const show = await getAllShowInfos();
@@ -13,7 +15,7 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ episodeId: string }>;
-}) {
+}): Promise<Metadata> {
   const { episodeId } = await params;
   const ep = await getEpisode(episodeId);
 

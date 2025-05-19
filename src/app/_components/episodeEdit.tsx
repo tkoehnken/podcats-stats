@@ -18,12 +18,14 @@ import BookEdit from "@/components/BookEdit";
 import { Button } from "@/components/ui/button";
 import { api } from "@/trpc/react";
 import { RefreshCcw } from "lucide-react";
+import {useRouter} from "next/navigation";
 
 type EpisodeEditProps = {
   data: EpisodeType;
 };
 
 const EpisodeEdit = ({ data }: EpisodeEditProps) => {
+  const router = useRouter();
   const img = getBiggestImage(data.images);
   const { mutateAsync: reloadBook } = api.books.getByISBN.useMutation();
   const { mutateAsync: reloadEp } = api.episode.reload.useMutation();
@@ -56,10 +58,12 @@ const EpisodeEdit = ({ data }: EpisodeEditProps) => {
       episodeType: episodeType,
       introduction: introduction,
     });
+    router.refresh()
   };
 
   const onReloadEp = async () => {
     await reloadEp(data.id);
+    router.refresh()
   };
 
   return (

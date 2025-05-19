@@ -1,3 +1,4 @@
+"use server"
 import { getEpisode } from "@/server/api/routers/spotify";
 import EpisodeEdit from "@/app/_components/episodeEdit";
 

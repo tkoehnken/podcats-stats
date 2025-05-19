@@ -52,6 +52,7 @@ export type ExtraDataType = {
 };
 
 export const getGuestById = async (id: string) => {
+
   const document = await db.collection("guest").doc(id).get();
 
   const data = document.data();
@@ -60,6 +61,7 @@ export const getGuestById = async (id: string) => {
 };
 
 export const getBookById = async (isbn: string) => {
+
   const document = await db
     .collection("books")
     .doc(isbn.replaceAll("-", ""))
@@ -70,7 +72,7 @@ export const getBookById = async (isbn: string) => {
 };
 
 export const getExtraDataForEpisode = async (id: string) => {
-  console.log("Load ep", id);
+  //console.log("Load ep", id);
   const document = await db.collection("episodes").doc(id).get();
   const data = document.data();
   if (data) {

@@ -7,9 +7,7 @@ import "./src/env.js";
 /** @type {import("next").NextConfig} */
 const config = {
   experimental: {
-    reactCompiler: true,
-    dynamicIO: false,
-    useCache: false,
+    reactCompiler: true
   },
   images: {
     remotePatterns: [{ hostname: "i.scdn.co" }],
