@@ -2,6 +2,7 @@ import {
   type ExtraDataType,
   getExtraDataForEpisode,
 } from "@/server/api/routers/google";
+import {unstable_cacheTag as cacheTag} from "next/cache";
 
 let authToken: string | undefined = undefined;
 
@@ -53,19 +54,17 @@ type GetPathResponse<T extends Paths> = T extends ShowPath
   ? SpotifyApi.ShowObject
   : never;
 
-const rawSpotifyRequest = async (
-  path: string
-): Promise<Response> => {
+const rawSpotifyRequest = async (path: string): Promise<Response> => {
   const token = await getAuthToken();
   return await fetch(path, {
     headers: {
       Authorization: `Bearer ${token}`,
-    }
+    },
   });
 };
 
 const execSpotify = async <T extends Paths>(
-  path: T
+  path: T,
 ): Promise<GetPathResponse<T>> => {
   const response = await rawSpotifyRequest(`${baseURL}${path}`);
 
@@ -83,7 +82,7 @@ export const getShow = async (): Promise<SpotifyApi.ShowObject> => {
 };
 
 export type EpisodeType = SpotifyApi.EpisodeObjectSimplified & {
-  extraData?: ExtraDataType;
+  extraData?: ExtraDataType&{date: number};
 };
 
 type ShowType = {
@@ -124,7 +123,9 @@ const enrichEpisodeData = async (
   return moreData;
 };
 
-export const getAllShowInfos = async (): Promise<ShowType> => {
+const loadSpotifyShowData = async () => {
+  "use cache";
+  cacheTag("spotify-show-data")
   const show = await getShow();
   let episodeUrl = show.episodes.next;
   const episodes = show.episodes.items;
@@ -140,8 +141,19 @@ export const getAllShowInfos = async (): Promise<ShowType> => {
     name: show.name,
     images: show.images,
     description: show.description,
-    episodes: await enrichEpisodeData(episodes),
-    date: Date.now(),
+    episodes,
+    date: Date.now()
+  };
+};
+
+export const getAllShowInfos = async (): Promise<ShowType> => {
+  const show = await loadSpotifyShowData();
+  return {
+    name: show.name,
+    images: show.images,
+    description: show.description,
+    episodes: await enrichEpisodeData(show.episodes),
+    date: show.date,
   };
 };
 
@@ -151,11 +163,13 @@ export const getAllShowInfos = async (): Promise<ShowType> => {
  * is already in the cache.
  * @param id
  */
-export const getEpisode = async (id: string): Promise<EpisodeType&{date: number}> => {
+export const getEpisode = async (
+  id: string,
+): Promise<EpisodeType> => {
   const info = await getAllShowInfos();
   const episode = info.episodes.filter((ep) => ep.id === id);
   if (episode.length === 0) throw Error(`No episodes found with id ${id}`);
   const ep = episode[0];
   if (ep == undefined) throw Error(`No episodes found with id ${id}`);
-  return {...ep,date: Date.now()};
+  return ep;
 };

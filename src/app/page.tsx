@@ -1,4 +1,3 @@
-"use server"
 import { getAllShowInfos } from "@/server/api/routers/spotify";
 import Episodes from "@/app/_components/episodes";
 

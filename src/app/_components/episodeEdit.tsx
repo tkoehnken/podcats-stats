@@ -18,37 +18,35 @@ import BookEdit from "@/components/BookEdit";
 import { Button } from "@/components/ui/button";
 import { api } from "@/trpc/react";
 import { RefreshCcw } from "lucide-react";
-import {useRouter} from "next/navigation";
 
 type EpisodeEditProps = {
-  data: EpisodeType;
+  episode: EpisodeType;
 };
 
-const EpisodeEdit = ({ data }: EpisodeEditProps) => {
-  const router = useRouter();
-  const img = getBiggestImage(data.images);
+const EpisodeEdit = ({ episode }: EpisodeEditProps) => {
+  const img = getBiggestImage(episode.images);
   const { mutateAsync: reloadBook } = api.books.getByISBN.useMutation();
   const { mutateAsync: reloadEp } = api.episode.reload.useMutation();
   const [episodeType, setEpisodeType] = useState<EpisodeTypes[]>(
-    data.extraData?.types ?? ["classic"],
+    episode.extraData?.types ?? ["classic"],
   );
   const [books, setBooks] = useState<EpisodeBookType[]>(
-    data.extraData?.books ?? [],
+    episode.extraData?.books ?? [],
   );
   const [introduction, setIntroduction] = useState<
     Required<ExtraDataType>["introduction"]
   >(
-    data.extraData?.introduction ?? {
+    episode.extraData?.introduction ?? {
       anne: undefined,
       fabienne: undefined,
     },
   );
-  const [guests, setGuests] = useState<Guest[]>(data.extraData?.guests ?? []);
+  const [guests, setGuests] = useState<Guest[]>(episode.extraData?.guests ?? []);
   const { mutateAsync } = api.episode.save.useMutation();
 
   const onSave = async () => {
     await mutateAsync({
-      id: data.id,
+      id: episode.id,
       books: books.map((book) => ({
         id: book.id,
         types: book.types ?? [],
@@ -58,12 +56,10 @@ const EpisodeEdit = ({ data }: EpisodeEditProps) => {
       episodeType: episodeType,
       introduction: introduction,
     });
-    router.refresh()
   };
 
   const onReloadEp = async () => {
-    await reloadEp(data.id);
-    router.refresh()
+    await reloadEp(episode.id);
   };
 
   return (
@@ -79,7 +75,7 @@ const EpisodeEdit = ({ data }: EpisodeEditProps) => {
       <div className="flex flex-row gap-1">
         <Image src={img.url} alt="Cover" height={400} width={400} />
         <div className="flex flex-col gap-2">
-          <h1 className="text-xl">{data.name}</h1>
+          <h1 className="text-xl">{episode.name}</h1>
           <div className="max-w-400">
             <EpisodeTypeSelect value={episodeType} onChange={setEpisodeType} />
           </div>
@@ -90,7 +86,7 @@ const EpisodeEdit = ({ data }: EpisodeEditProps) => {
             </div>
           ) : null}
           <IntroductionEdit value={introduction} onChange={setIntroduction} />
-          <p>{data.description}</p>
+          <p>{episode.description}</p>
         </div>
       </div>
       <div className="grid grid-cols-4 gap-5">

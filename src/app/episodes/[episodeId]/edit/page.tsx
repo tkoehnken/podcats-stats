@@ -1,20 +1,29 @@
-"use server"
+import { Suspense } from "react";
 import { getEpisode } from "@/server/api/routers/spotify";
 import EpisodeEdit from "@/app/_components/episodeEdit";
 
-export default async function Page({
+type PageProps = {
+  params: Promise<{ episodeId: string }>;
+};
+
+export default function Page({ params }: PageProps) {
+  return (
+    <main className="flex flex-col items-center justify-center">
+      <div className="w-full max-w-5xl">
+        <Suspense fallback={<p>Loading...</p>}>
+          <SuspenseEpisode params={params} />
+        </Suspense>
+      </div>
+    </main>
+  );
+}
+
+async function SuspenseEpisode({
   params,
 }: {
   params: Promise<{ episodeId: string }>;
 }) {
   const { episodeId } = await params;
   const ep = await getEpisode(episodeId);
-
-  return (
-    <main className="flex flex-col items-center justify-center">
-      <div className="w-full max-w-5xl">
-        <EpisodeEdit data={ep} />
-      </div>
-    </main>
-  );
+  return <EpisodeEdit episode={ep} />;
 }

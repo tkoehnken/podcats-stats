@@ -4,6 +4,7 @@ import {
   type ListOfEpisodeTypes,
   type ListOfSocials,
 } from "@/lib/utils";
+import { unstable_cacheTag as cacheTag } from "next/cache";
 
 export type EpisodeTypes = (typeof ListOfEpisodeTypes)[number];
 export type BookTypes = (typeof ListOfBookTypes)[number];
@@ -52,7 +53,6 @@ export type ExtraDataType = {
 };
 
 export const getGuestById = async (id: string) => {
-
   const document = await db.collection("guest").doc(id).get();
 
   const data = document.data();
@@ -61,7 +61,6 @@ export const getGuestById = async (id: string) => {
 };
 
 export const getBookById = async (isbn: string) => {
-
   const document = await db
     .collection("books")
     .doc(isbn.replaceAll("-", ""))
@@ -72,12 +71,14 @@ export const getBookById = async (isbn: string) => {
 };
 
 export const getExtraDataForEpisode = async (id: string) => {
-  //console.log("Load ep", id);
+  "use cache";
   const document = await db.collection("episodes").doc(id).get();
+  cacheTag("episode-data-" + id);
   const data = document.data();
   if (data) {
     const d = data as InternalEpisode;
     return {
+      date: Date.now(),
       introduction: d.introduction,
       types: d.types,
       guests: d.guests

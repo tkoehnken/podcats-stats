@@ -3,7 +3,7 @@ import { getBiggestImage } from "@/lib/utils";
 import type { EpisodeType } from "@/server/api/routers/spotify";
 
 type EpisodeProps = {
-  data: EpisodeType & { date: number };
+  data: EpisodeType;
 };
 
 export default async function Episode({ data }: EpisodeProps) {
@@ -15,8 +15,7 @@ export default async function Episode({ data }: EpisodeProps) {
         <h1 className="text-xl">{data.name}</h1>
         <div>
           <div>Anne: {data.extraData?.introduction?.anne ?? "404"}</div>
-          <div>Req: {data.date}</div>
-          <div>Server: {Date.now()}</div>
+          <div>Req: {data.extraData?.date}</div>
         </div>
         <p>{data.description}</p>
         {data.extraData ? <ExtraData {...data.extraData} /> : null}

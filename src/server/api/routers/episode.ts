@@ -4,7 +4,7 @@ import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { db } from "@/server/firebase/util";
 import { typesSchema } from "@/lib/zodSchemas";
 import { ListOfEpisodeTypes } from "@/lib/utils";
-import { getEpisode } from "@/server/api/routers/spotify";
+import { revalidateTag } from "next/cache";
 
 export const episodeRouter = createTRPCRouter({
   save: publicProcedure
@@ -22,10 +22,12 @@ export const episodeRouter = createTRPCRouter({
           )
           .optional(),
         guests: z.array(z.string()).optional(),
-        introduction: z.object({
-          anne: z.string().optional(),
-          fabienne: z.string().optional()
-        }).optional()
+        introduction: z
+          .object({
+            anne: z.string().optional(),
+            fabienne: z.string().optional(),
+          })
+          .optional(),
       }),
     )
     .mutation(async ({ input }): Promise<void> => {
@@ -34,18 +36,15 @@ export const episodeRouter = createTRPCRouter({
           books: input.books,
           guests: input.guests,
           types: input.episodeType,
-          introduction: input.introduction
+          introduction: input.introduction,
         },
         { merge: true },
       );
+      revalidateTag("episode-data-" + input.id);
     }),
   reload: publicProcedure
     .input(z.string())
     .mutation(async ({ input }): Promise<void> => {
-      const ep = await getEpisode(input);
-      /*ep.extraData?.books?.forEach((book) => {
-
-      });*/
-
+      revalidateTag("episode-data-" + input);
     }),
 });
