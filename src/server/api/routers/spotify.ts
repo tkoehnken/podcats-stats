@@ -2,6 +2,7 @@ import {
   type ExtraDataType,
   getExtraDataForEpisode,
 } from "@/server/api/routers/google";
+import { unstable_cache } from "next/cache";
 
 let authToken: string | undefined = undefined;
 
@@ -81,7 +82,7 @@ export const getShow = async (): Promise<SpotifyApi.ShowObject> => {
 };
 
 export type EpisodeType = SpotifyApi.EpisodeObjectSimplified & {
-  extraData?: ExtraDataType&{date: number};
+  extraData?: ExtraDataType & { date: number };
 };
 
 type ShowType = {
@@ -122,26 +123,30 @@ const enrichEpisodeData = async (
   return moreData;
 };
 
-const loadSpotifyShowData = async () => {
-  const show = await getShow();
-  let episodeUrl = show.episodes.next;
-  const episodes = show.episodes.items;
-  while (episodeUrl !== null) {
-    const ep = await rawSpotifyRequest(episodeUrl);
-    if (!ep.ok)
-      throw Error(`Failed ${episodeUrl} [${ep.status}]: ${ep.statusText}`);
-    const epData = (await ep.json()) as SpotifyApi.ShowEpisodesResponse;
-    episodes.push(...epData.items);
-    episodeUrl = epData.next;
-  }
-  return {
-    name: show.name,
-    images: show.images,
-    description: show.description,
-    episodes,
-    date: Date.now()
-  };
-};
+const loadSpotifyShowData = unstable_cache(
+  async () => {
+    const show = await getShow();
+    let episodeUrl = show.episodes.next;
+    const episodes = show.episodes.items;
+    while (episodeUrl !== null) {
+      const ep = await rawSpotifyRequest(episodeUrl);
+      if (!ep.ok)
+        throw Error(`Failed ${episodeUrl} [${ep.status}]: ${ep.statusText}`);
+      const epData = (await ep.json()) as SpotifyApi.ShowEpisodesResponse;
+      episodes.push(...epData.items);
+      episodeUrl = epData.next;
+    }
+    return {
+      name: show.name,
+      images: show.images,
+      description: show.description,
+      episodes,
+      date: Date.now(),
+    };
+  },
+  ["show"],
+  { tags: ["show"] },
+);
 
 export const getAllShowInfos = async (): Promise<ShowType> => {
   const show = await loadSpotifyShowData();
@@ -160,9 +165,7 @@ export const getAllShowInfos = async (): Promise<ShowType> => {
  * is already in the cache.
  * @param id
  */
-export const getEpisode = async (
-  id: string,
-): Promise<EpisodeType> => {
+export const getEpisode = async (id: string): Promise<EpisodeType> => {
   const info = await getAllShowInfos();
   const episode = info.episodes.filter((ep) => ep.id === id);
   if (episode.length === 0) throw Error(`No episodes found with id ${id}`);
