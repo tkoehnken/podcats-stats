@@ -1,29 +1,40 @@
-import { Suspense } from "react";
-import { getEpisode } from "@/server/api/routers/spotify";
+import { getAllShowInfos, getEpisode } from "@/server/api/routers/spotify";
 import EpisodeEdit from "@/app/_components/episodeEdit";
+import type { Metadata } from "next";
+
+export async function generateStaticParams() {
+  const show = await getAllShowInfos();
+
+  return show.episodes.map((ep) => ({
+    episodeId: ep.id,
+  }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ episodeId: string }>;
+}): Promise<Metadata> {
+  const { episodeId } = await params;
+  const ep = await getEpisode(episodeId);
+
+  return {
+    title: ep.name,
+  };
+}
 
 type PageProps = {
   params: Promise<{ episodeId: string }>;
 };
 
-export default function Page({ params }: PageProps) {
+export default async function Page({ params }: PageProps) {
+  const { episodeId } = await params;
+  const ep = await getEpisode(episodeId);
   return (
     <main className="flex flex-col items-center justify-center">
       <div className="w-full max-w-5xl">
-        <Suspense fallback={<p>Loading...</p>}>
-          <SuspenseEpisode params={params} />
-        </Suspense>
+        <EpisodeEdit episode={ep} />;
       </div>
     </main>
   );
-}
-
-async function SuspenseEpisode({
-  params,
-}: {
-  params: Promise<{ episodeId: string }>;
-}) {
-  const { episodeId } = await params;
-  const ep = await getEpisode(episodeId);
-  return <EpisodeEdit episode={ep} />;
 }
