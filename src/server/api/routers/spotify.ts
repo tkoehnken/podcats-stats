@@ -2,7 +2,6 @@ import {
   type ExtraDataType,
   getExtraDataForEpisode,
 } from "@/server/api/routers/google";
-import {unstable_cacheTag as cacheTag} from "next/cache";
 
 let authToken: string | undefined = undefined;
 
@@ -124,8 +123,6 @@ const enrichEpisodeData = async (
 };
 
 const loadSpotifyShowData = async () => {
-  "use cache";
-  cacheTag("spotify-show-data")
   const show = await getShow();
   let episodeUrl = show.episodes.next;
   const episodes = show.episodes.items;
