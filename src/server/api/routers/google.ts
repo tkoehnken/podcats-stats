@@ -27,7 +27,7 @@ export type Guest = {
   links?: { url: string; icon: Social }[];
 };
 
-type InternalEpisode = {
+export type InternalEpisode = {
   types?: EpisodeTypes[];
   books?: { id: string; types: BookTypes[] }[];
   guests?: string[];

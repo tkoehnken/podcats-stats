@@ -9,6 +9,7 @@ import type {
   EpisodeTypes,
   ExtraDataType,
   Guest,
+  InternalEpisode,
 } from "@/server/api/routers/google";
 import AddBook from "@/components/AddBook";
 import IntroductionEdit from "@/components/IntroductionEdit";
@@ -21,12 +22,17 @@ import { RefreshCcw } from "lucide-react";
 
 type EpisodeEditProps = {
   episode: EpisodeType;
+  refreshAction: () => void;
+  saveAction: (data: { id: string } & InternalEpisode) => void;
 };
 
-const EpisodeEdit = ({ episode }: EpisodeEditProps) => {
+const EpisodeEdit = ({
+  episode,
+  refreshAction,
+  saveAction,
+}: EpisodeEditProps) => {
   const img = getBiggestImage(episode.images);
   const { mutateAsync: reloadBook } = api.books.getByISBN.useMutation();
-  const { mutateAsync: reloadEp } = api.episode.reload.useMutation();
   const [episodeType, setEpisodeType] = useState<EpisodeTypes[]>(
     episode.extraData?.types ?? ["classic"],
   );
@@ -41,36 +47,38 @@ const EpisodeEdit = ({ episode }: EpisodeEditProps) => {
       fabienne: undefined,
     },
   );
-  const [guests, setGuests] = useState<Guest[]>(episode.extraData?.guests ?? []);
-  const { mutateAsync } = api.episode.save.useMutation();
-
-  const onSave = async () => {
-    await mutateAsync({
-      id: episode.id,
-      books: books.map((book) => ({
-        id: book.id,
-        types: book.types ?? [],
-        presenter: book.presenter,
-      })),
-      guests: guests.length > 0 ? guests.map(({ id }) => id) : undefined,
-      episodeType: episodeType,
-      introduction: introduction,
-    });
-  };
-
-  const onReloadEp = async () => {
-    await reloadEp(episode.id);
-  };
+  const [guests, setGuests] = useState<Guest[]>(
+    episode.extraData?.guests ?? [],
+  );
 
   return (
     <div className="flex flex-col gap-15 pb-4">
       <div className="fixed top-1.5 right-3 flex flex-row items-center gap-2.5">
-        <Button onClick={onReloadEp}>
-          <RefreshCcw />
-        </Button>
-        <Button onClick={onSave} variant="secondary">
-          Save
-        </Button>
+        <form action={refreshAction}>
+          <Button type="submit">
+            <RefreshCcw />
+          </Button>
+        </form>
+        <form
+          action={() =>
+            saveAction({
+              id: episode.id,
+              books: books.map((book) => ({
+                id: book.id,
+                types: book.types ?? [],
+                presenter: book.presenter,
+              })),
+              guests:
+                guests.length > 0 ? guests.map(({ id }) => id) : undefined,
+              types: episodeType,
+              introduction: introduction,
+            })
+          }
+        >
+          <Button type="submit" variant="secondary">
+            Save
+          </Button>
+        </form>
       </div>
       <div className="flex flex-row gap-1">
         <Image src={img.url} alt="Cover" height={400} width={400} />
@@ -118,7 +126,7 @@ const EpisodeEdit = ({ episode }: EpisodeEditProps) => {
                 return tmp;
               });
             }}
-            onReload={(isbn) => reloadBook({ isbn,reload: true })}
+            onReload={(isbn) => reloadBook({ isbn, reload: true })}
           />
         ))}
         <div className="flex h-75 w-50 border-1 p-5">
