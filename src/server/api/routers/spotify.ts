@@ -2,7 +2,6 @@ import {
   type ExtraDataType,
   getExtraDataForEpisode,
 } from "@/server/api/routers/google";
-import { unstable_cache } from "next/cache";
 
 let authToken: string | undefined = undefined;
 
@@ -89,7 +88,7 @@ type ShowType = {
   name: string;
   images: SpotifyApi.ImageObject[];
   description: string;
-  episodes: EpisodeType[];
+  episodes: SpotifyApi.EpisodeObjectSimplified[];
   date: number;
 };
 
@@ -101,7 +100,7 @@ const chunkArray = <T>(arr: T[], size = 10): T[][] => {
   return chunks;
 };
 
-const enrichEpisodeData = async (
+export const enrichEpisodeData = async (
   episodes: SpotifyApi.EpisodeObjectSimplified[],
 ): Promise<EpisodeType[]> => {
   const moreData: EpisodeType[] = [...episodes];
@@ -123,30 +122,27 @@ const enrichEpisodeData = async (
   return moreData;
 };
 
-const loadSpotifyShowData = unstable_cache(
-  async () => {
-    const show = await getShow();
-    let episodeUrl = show.episodes.next;
-    const episodes = show.episodes.items;
-    while (episodeUrl !== null) {
-      const ep = await rawSpotifyRequest(episodeUrl);
-      if (!ep.ok)
-        throw Error(`Failed ${episodeUrl} [${ep.status}]: ${ep.statusText}`);
-      const epData = (await ep.json()) as SpotifyApi.ShowEpisodesResponse;
-      episodes.push(...epData.items);
-      episodeUrl = epData.next;
-    }
-    return {
-      name: show.name,
-      images: show.images,
-      description: show.description,
-      episodes,
-      date: Date.now(),
-    };
-  },
-  ["show"],
-  { tags: ["show"] },
-);
+const loadSpotifyShowData = async () => {
+  "use cache"
+  const show = await getShow();
+  //let episodeUrl = show.episodes.next;
+  const episodes = show.episodes.items.slice(0, 1);
+  /*while (episodeUrl !== null) {
+    const ep = await rawSpotifyRequest(episodeUrl);
+    if (!ep.ok)
+      throw Error(`Failed ${episodeUrl} [${ep.status}]: ${ep.statusText}`);
+    const epData = (await ep.json()) as SpotifyApi.ShowEpisodesResponse;
+    episodes.push(...epData.items);
+    episodeUrl = epData.next;
+  }*/
+  return {
+    name: show.name,
+    images: show.images,
+    description: show.description,
+    episodes,
+    date: Date.now(),
+  };
+};
 
 export const getAllShowInfos = async (): Promise<ShowType> => {
   const show = await loadSpotifyShowData();
@@ -154,7 +150,7 @@ export const getAllShowInfos = async (): Promise<ShowType> => {
     name: show.name,
     images: show.images,
     description: show.description,
-    episodes: await enrichEpisodeData(show.episodes),
+    episodes: show.episodes,
     date: show.date,
   };
 };
@@ -171,5 +167,5 @@ export const getEpisode = async (id: string): Promise<EpisodeType> => {
   if (episode.length === 0) throw Error(`No episodes found with id ${id}`);
   const ep = episode[0];
   if (ep == undefined) throw Error(`No episodes found with id ${id}`);
-  return ep;
+  return {...ep,extraData: await getExtraDataForEpisode(ep.id)};
 };

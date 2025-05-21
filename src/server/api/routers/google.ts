@@ -4,7 +4,7 @@ import {
   type ListOfEpisodeTypes,
   type ListOfSocials,
 } from "@/lib/utils";
-import { unstable_cache } from "next/cache";
+import { unstable_cacheTag as cacheTag } from "next/cache";
 
 export type EpisodeTypes = (typeof ListOfEpisodeTypes)[number];
 export type BookTypes = (typeof ListOfBookTypes)[number];
@@ -70,46 +70,44 @@ export const getBookById = async (isbn: string) => {
   return undefined;
 };
 
-export const getExtraDataForEpisode = unstable_cache(
-  async (id: string) => {
-    const document = await db.collection("episodes").doc(id).get();
-    const data = document.data();
-    if (data) {
-      const d = data as InternalEpisode;
-      return {
-        date: Date.now(),
-        introduction: d.introduction,
-        types: d.types,
-        guests: d.guests
-          ? (
-              await Promise.all(
-                d.guests.map(async (gId) => {
-                  const guest = await getGuestById(gId);
-                  if (guest) return guest;
-                  return [];
-                }),
-              )
-            ).flat()
-          : undefined,
-        books: d.books
-          ? (
-              await Promise.all(
-                d.books.map(async (b) => {
-                  const book = await getBookById(b.id);
-                  if (book)
-                    return {
-                      ...book,
-                      types: b.types,
-                    };
-                  return [];
-                }),
-              )
-            ).flat()
-          : undefined,
-      };
-    }
-    return undefined;
-  },
-  ["episode"],
-  { tags: ["episode"] },
-);
+export const getExtraDataForEpisode = async (id: string) => {
+  "use cache";
+  cacheTag("episode");
+  const document = await db.collection("episodes").doc(id).get();
+  const data = document.data();
+  if (data) {
+    const d = data as InternalEpisode;
+    return {
+      date: Date.now(),
+      introduction: d.introduction,
+      types: d.types,
+      guests: d.guests
+        ? (
+            await Promise.all(
+              d.guests.map(async (gId) => {
+                const guest = await getGuestById(gId);
+                if (guest) return guest;
+                return [];
+              }),
+            )
+          ).flat()
+        : undefined,
+      books: d.books
+        ? (
+            await Promise.all(
+              d.books.map(async (b) => {
+                const book = await getBookById(b.id);
+                if (book)
+                  return {
+                    ...book,
+                    types: b.types,
+                  };
+                return [];
+              }),
+            )
+          ).flat()
+        : undefined,
+    };
+  }
+  return {date: Date.now()};
+};

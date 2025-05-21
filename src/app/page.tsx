@@ -1,9 +1,10 @@
-import { getAllShowInfos } from "@/server/api/routers/spotify";
+import { enrichEpisodeData, getAllShowInfos } from "@/server/api/routers/spotify";
 import Episodes from "@/app/_components/episodes";
 
 export default async function Home() {
 
   const show = await getAllShowInfos();
+  const episodes = await enrichEpisodeData(show.episodes);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center">
@@ -13,7 +14,7 @@ export default async function Home() {
         </h1>
       </div>
       <div className="max-w-5xl">
-        <Episodes list={show.episodes} />
+        <Episodes list={episodes} />
       </div>
     </main>
   );
