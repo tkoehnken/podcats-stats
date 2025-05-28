@@ -125,16 +125,16 @@ export const enrichEpisodeData = async (
 const loadSpotifyShowData = async () => {
   "use cache"
   const show = await getShow();
-  //let episodeUrl = show.episodes.next;
-  const episodes = show.episodes.items.slice(0, 1);
-  /*while (episodeUrl !== null) {
+  let episodeUrl = show.episodes.next;
+  const episodes = show.episodes.items;
+  while (episodeUrl !== null) {
     const ep = await rawSpotifyRequest(episodeUrl);
     if (!ep.ok)
       throw Error(`Failed ${episodeUrl} [${ep.status}]: ${ep.statusText}`);
     const epData = (await ep.json()) as SpotifyApi.ShowEpisodesResponse;
     episodes.push(...epData.items);
     episodeUrl = epData.next;
-  }*/
+  }
   return {
     name: show.name,
     images: show.images,

@@ -11,6 +11,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
+import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 
 type EpisodesProps = {
   list: EpisodeType[];
@@ -48,12 +50,17 @@ const Episode = (props: EpisodeProps) => {
   const mainBook = props.data.extraData?.books?.find(({ types }) =>
     types?.includes("main"),
   );
+  const disabled =
+    !props.data.extraData?.books || props.data.extraData.books.length === 0;
 
   return (
-    <div className="hover:border-primary w-full rounded-xl border-2 border-transparent p-2 transition duration-300 ease-in-out">
-      <Collapsible disabled={!props.data.extraData?.books || props.data.extraData.books.length === 0}>
-        <CollapsibleTrigger>
-          <div className="flex flex-row gap-2 text-left">
+    <Collapsible
+      disabled={disabled}
+      className="hover:border-primary min-h-[225px] w-full rounded-xl border-2 border-transparent p-2 transition duration-300 ease-in-out data-[state=open]:backdrop-brightness-80 data-[state=open]:[&_.trigger-icon-down]:hidden data-[state=open]:[&_.trigger-icon-up]:block"
+    >
+      <CollapsibleTrigger>
+        <div className="flex flex-row gap-2 text-left">
+          <div className="flex min-w-[150px] flex-col justify-between">
             <Image
               src={img.url}
               height={150}
@@ -62,31 +69,39 @@ const Episode = (props: EpisodeProps) => {
               className="h-37.5 w-37.5"
               loading="lazy"
             />
-            <div className="flex flex-col gap-2">
-              <Link href={`/episodes/${props.data.id}`}>
-                <h3 className="text-2xl">{props.data.name}</h3>
-              </Link>
-              <div>
-                Anne {props.data.extraData?.introduction?.anne??"404"}
-              </div>
-              <article className="whitespace-pre-wrap">
-                {props.data.description}
-              </article>
-            </div>
-            {mainBook ? <Book data={mainBook} width={150} /> : null}
+            {!disabled ? (
+              <Button variant="ghost" size="icon">
+                <ChevronDownIcon className="trigger-icon-down h-5 w-5" />
+                <ChevronUpIcon className="trigger-icon-up hidden h-5 w-5" />
+              </Button>
+            ) : null}
           </div>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="grid grid-cols-6 gap-5 mt-5">
-            {props.data.extraData?.books?.filter(({types})=>!types?.includes("main"))?.map((book) => (
-              <div key={book.id} style={{ width: 150 }}>
+          <div className="flex flex-col gap-2">
+            <Link
+              href={`/episodes/${props.data.id}`}
+              className="hover:underline"
+            >
+              <h3 className="text-2xl">{props.data.name}</h3>
+            </Link>
+            <article className="whitespace-pre-wrap">
+              {props.data.description}
+            </article>
+          </div>
+          {mainBook ? <Book data={mainBook} width={150} /> : null}
+        </div>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="mt-5 grid lg:grid-cols-[repeat(6,150px)] md:grid-cols-[repeat(4,150px)] auto-cols-min grid-cols-[repeat(3,150px)] justify-between gap-5">
+          {props.data.extraData?.books
+            ?.filter(({ types }) => !types?.includes("main"))
+            ?.map((book) => (
+              <div key={book.id} className="w-[150px]">
                 <Book data={book} width={150} />
               </div>
             ))}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </div>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 };
 

@@ -40,11 +40,11 @@ export const episodeRouter = createTRPCRouter({
         },
         { merge: true },
       );
-      revalidateTag("episode");
+      revalidateTag(`episode-${input.id}`);
     }),
   reload: publicProcedure
     .input(z.string())
     .mutation(async ({ input }): Promise<void> => {
-      revalidateTag("episode");
+      revalidateTag(`episode-${input}`);
     }),
 });

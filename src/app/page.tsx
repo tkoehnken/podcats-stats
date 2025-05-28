@@ -13,7 +13,7 @@ export default async function Home() {
           {show.name}
         </h1>
       </div>
-      <div className="max-w-5xl">
+      <div className="max-w-5xl w-full">
         <Episodes list={episodes} />
       </div>
     </main>

@@ -72,7 +72,7 @@ export const getBookById = async (isbn: string) => {
 
 export const getExtraDataForEpisode = async (id: string) => {
   "use cache";
-  cacheTag("episode");
+  cacheTag(`episode-${id}`);
   const document = await db.collection("episodes").doc(id).get();
   const data = document.data();
   if (data) {

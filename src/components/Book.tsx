@@ -27,7 +27,7 @@ const Book = (props: BookProps) => (
         />
       </HoverCardTrigger>
       <HoverCardContent side="left">
-        <ScrollArea className="h-50">
+        <ScrollArea className="h-100">
           <div className="flex flex-col gab-2 p-4">
             <span className="text-xl">{props.data.title}</span>
             <span className="text-sm">
