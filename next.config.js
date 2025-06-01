@@ -10,7 +10,8 @@ const config = {
     reactCompiler: true,
     // DO not try again!!!!! Try old why first!!! I did it again
     dynamicIO: true,
-    useCache: true
+    useCache: true,
+    viewTransition: true
   },
   images: {
     remotePatterns: [{ hostname: "i.scdn.co" }],

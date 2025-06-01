@@ -4,6 +4,7 @@ import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { type Book, getBookById } from "@/server/api/routers/google";
 import { db } from "@/server/firebase/util";
 import * as BookApi from "@/server/internal/bookApi";
+import { auth } from "@clerk/nextjs/server";
 
 export const bookRouter = createTRPCRouter({
   getByISBN: publicProcedure
@@ -14,6 +15,8 @@ export const bookRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }): Promise<Book> => {
+      const {userId} = await auth();
+      if(!userId) throw new Error("Not logged in");
       if (!input.reload) {
         const cached = await getBookById(input.isbn.replaceAll("-", ""));
         if (cached) {

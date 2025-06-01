@@ -11,8 +11,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { unstable_ViewTransition as ViewTransition } from "react";
 
 type EpisodesProps = {
   list: EpisodeType[];
@@ -61,19 +61,21 @@ const Episode = (props: EpisodeProps) => {
       <CollapsibleTrigger>
         <div className="flex flex-row gap-2 text-left">
           <div className="flex min-w-[150px] flex-col justify-between">
-            <Image
-              src={img.url}
-              height={150}
-              width={150}
-              alt="Episode cover"
-              className="h-37.5 w-37.5"
-              loading="lazy"
-            />
+            <ViewTransition name="episode_cover">
+              <Image
+                src={img.url}
+                height={150}
+                width={150}
+                alt="Episode cover"
+                className="h-37.5 w-37.5"
+                loading="lazy"
+              />
+            </ViewTransition>
             {!disabled ? (
-              <Button variant="ghost" size="icon">
+              <>
                 <ChevronDownIcon className="trigger-icon-down h-5 w-5" />
                 <ChevronUpIcon className="trigger-icon-up hidden h-5 w-5" />
-              </Button>
+              </>
             ) : null}
           </div>
           <div className="flex flex-col gap-2">
@@ -91,7 +93,7 @@ const Episode = (props: EpisodeProps) => {
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="mt-5 grid lg:grid-cols-[repeat(6,150px)] md:grid-cols-[repeat(4,150px)] auto-cols-min grid-cols-[repeat(3,150px)] justify-between gap-5">
+        <div className="mt-5 grid auto-cols-min grid-cols-[repeat(3,150px)] justify-between gap-5 md:grid-cols-[repeat(4,150px)] lg:grid-cols-[repeat(6,150px)]">
           {props.data.extraData?.books
             ?.filter(({ types }) => !types?.includes("main"))
             ?.map((book) => (

@@ -1,32 +1,31 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
 type BookCoverProps = {
   title: string,
   authors: string[],
-  width?: number,
-  height?: number,
   animated?: boolean,
-  header?: React.ReactNode
+  header?: React.ReactNode,
+  className: string
 };
 
 const BookCover: React.FC<BookCoverProps> = ({
   title = "Test Title",
   authors = ["Me and you"],
-  width = 300,
-  height = 450,
   animated = false,
   header,
+  className
 }) => {
   if (animated) {
     return (
-      <BackgroundAnimated width={width} height={height}>
+      <BackgroundAnimated className={className}>
         <Info title={title} authors={authors} header={header} />
       </BackgroundAnimated>
     );
   }
 
   return (
-    <Background width={width} height={height}>
+    <Background className={className}>
       <Info title={title} authors={authors} header={header} />
     </Background>
   );
@@ -53,18 +52,13 @@ const Info = (props: InfoProps) => (
 );
 
 type BackgroundProps = {
-  width: number;
-  height: number;
   children: React.ReactNode;
+  className: string;
 };
 
 const Background = (props: BackgroundProps) => (
   <div
-    style={{
-      maxWidth: props.width,
-      height: props.height,
-    }}
-    className="bg-gradient-dark flex flex-col justify-between overflow-hidden rounded-2xl"
+    className={cn(props.className,"bg-gradient-dark flex flex-col justify-between overflow-hidden rounded-2xl")}
   >
     {props.children}
   </div>
@@ -72,11 +66,7 @@ const Background = (props: BackgroundProps) => (
 
 const BackgroundAnimated = (props: BackgroundProps) => (
   <div
-    style={{
-      maxWidth: props.width,
-      height: props.height,
-    }}
-    className="animate-gradient-x bg-gradient-dark flex flex-col justify-between overflow-hidden rounded-2xl"
+    className={cn(props.className,"animate-gradient-x bg-gradient-dark flex flex-col justify-between overflow-hidden rounded-2xl")}
   >
     {props.children}
   </div>

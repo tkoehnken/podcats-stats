@@ -5,6 +5,7 @@ import { db } from "@/server/firebase/util";
 import { typesSchema } from "@/lib/zodSchemas";
 import { ListOfEpisodeTypes } from "@/lib/utils";
 import { revalidateTag } from "next/cache";
+import { auth } from "@clerk/nextjs/server";
 
 export const episodeRouter = createTRPCRouter({
   save: publicProcedure
@@ -31,6 +32,8 @@ export const episodeRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }): Promise<void> => {
+      const { userId } = await auth();
+      if (!userId) return;
       await db.collection("episodes").doc(input.id).set(
         {
           books: input.books,
@@ -45,6 +48,8 @@ export const episodeRouter = createTRPCRouter({
   reload: publicProcedure
     .input(z.string())
     .mutation(async ({ input }): Promise<void> => {
+      const { userId } = await auth();
+      if (!userId) return;
       revalidateTag(`episode-${input}`);
     }),
 });

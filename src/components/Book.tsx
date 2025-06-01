@@ -22,8 +22,7 @@ const Book = (props: BookProps) => (
           authors={props.data.authors.map(
             ({ firstname, lastname }) => `${firstname} ${lastname}`,
           )}
-          width={props.width}
-          height={props.height ?? props.width * 1.5}
+          className="min-w-[150px] min-h-[225px] max-w-[150px] max-h-[225px]"
         />
       </HoverCardTrigger>
       <HoverCardContent side="left">
