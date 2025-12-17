@@ -141,7 +141,6 @@
     --sidebar-ring: oklch(0.637 0.237 25.331);
 }
 
-
 @layer base {
     * {
         @apply border-border outline-ring/50;
@@ -149,5 +148,14 @@
 
     body {
         @apply from-background to-primary bg-linear-to-r from-15% to-150%;
+    }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground;
     }
 }
