@@ -4,7 +4,7 @@ import {
   type ListOfEpisodeTypes,
   type ListOfSocials,
 } from "@/lib/utils";
-import { unstable_cacheTag as cacheTag } from "next/cache";
+import { cacheTag } from "next/cache";
 
 export type EpisodeTypes = (typeof ListOfEpisodeTypes)[number];
 export type BookTypes = (typeof ListOfBookTypes)[number];
