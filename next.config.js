@@ -7,15 +7,13 @@ import "./src/env.js";
 /** @type {import("next").NextConfig} */
 const config = {
   experimental: {
-    reactCompiler: true,
-    // DO not try again!!!!! Try old why first!!! I did it again
-    dynamicIO: true,
     useCache: true,
     viewTransition: true
   },
   images: {
     remotePatterns: [{ hostname: "i.scdn.co" }],
   },
+  reactCompiler: true,
   logging: {
     fetches: {
       fullUrl: true,

@@ -1,13 +1,16 @@
-import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
+// eslint.config.js
+import next from "eslint-config-next/core-web-vitals"; // <= new import
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
+  { ignores: [".next", ".vercel", "out"] },
+
+  // Next.js recommended + core-web-vitals
+  ...next,
+
+  // TypeScript
   {
-    ignores: [".next"],
-  },
-  ...compat.extends("next/core-web-vitals"),
-  {
-    files: ["**/*.ts", "**/*.tsx"],
+    files: ["**/*.{ts,tsx}"],
     extends: [
       ...tseslint.configs.recommended,
       ...tseslint.configs.recommendedTypeChecked,
@@ -20,10 +23,7 @@ export default tseslint.config(
         "warn",
         { prefer: "type-imports", fixStyle: "inline-type-imports" },
       ],
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        { argsIgnorePattern: "^_" },
-      ],
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/require-await": "off",
       "@typescript-eslint/no-misused-promises": [
         "error",
@@ -31,14 +31,12 @@ export default tseslint.config(
       ],
     },
   },
+
+  // Global settings
   {
-    linterOptions: {
-      reportUnusedDisableDirectives: true,
-    },
+    linterOptions: { reportUnusedDisableDirectives: true },
     languageOptions: {
-      parserOptions: {
-        projectService: true,
-      },
+      parserOptions: { projectService: true },
     },
   },
 );
