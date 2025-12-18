@@ -3,23 +3,29 @@ import { v } from "convex/values";
 
 export const episodeSchema = {
   spotifyId: v.string(),
-  books: v.array(
-    v.object({
-      id: v.id("books"),
-      type: v.array(
-        v.union(
-          v.literal("main"),
-          v.literal("new"),
-          v.literal("next"),
-          v.literal("suggestion"),
-          v.literal("recommended"),
-        ),
-      ),
-    }),
-  ),
-  guests: v.nullable(v.array(v.id("guests"))),
+  books: v.array(v.id("books")),
   greetings: v.array(v.id("greetings")),
 };
+
+export const bookEpisodesSchema = v.object({
+  bookId: v.id("books"),
+  episodeId: v.id("episodes"),
+  type: v.array(
+    v.union(
+      v.literal("main"),
+      v.literal("new"),
+      v.literal("next"),
+      v.literal("suggestion"),
+      v.literal("recommended"),
+    ),
+  )
+});
+
+
+export const guestEpisodesSchema = v.object({
+  episodeId: v.id("episodes"),
+  guestId: v.id("guests"),
+});
 
 export const greetingSchema = v.union(
   v.object({
@@ -43,13 +49,13 @@ export const collectionsSchema = {
 
 export const collectionBooksSchema = {
   bookId: v.id("books"),
-  collectionId: v.string(),
+  collectionId: v.id("collections"),
   part: v.number(),
 };
 
 export const bookAuthorSchema = {
-  bookId: v.string(),
-  authorId: v.string(),
+  bookId: v.id("books"),
+  authorId: v.id("authors"),
 };
 
 export const bookVariantsSchema = v.object({
@@ -68,7 +74,6 @@ export const bookVariantsSchema = v.object({
   pages: v.nullable(v.number()),
   bookId: v.id("books"),
 });
-
 
 export const bookSchema = v.object({
   title: v.string(),
@@ -94,7 +99,7 @@ export const authorSchema = {
   ),
 };
 
-export const guestSchema = {
+export const guestSchema = v.object({
   links: v.array(
     v.object({
       link: v.string(),
@@ -112,13 +117,15 @@ export const guestSchema = {
   img: v.nullable(v.string()),
   description: v.nullable(v.string()),
   author: v.nullable(v.id("authors")),
-};
+  name: v.string(),
+});
 
 export default defineSchema({
-  books: defineTable(bookSchema)
-    .index("by_publisher", ["publisher"])
-    .index("by_publisherTitle", ["publisher", "title"]),
-  bookVariant: defineTable(bookVariantsSchema),
+  books: defineTable(bookSchema).index("by_publisherTitle", [
+    "publisher",
+    "title",
+  ]),
+  bookVariant: defineTable(bookVariantsSchema).index("by_isbn", ["isbn"]),
   collectionBooks: defineTable(collectionBooksSchema)
     .index("by_book", ["bookId"])
     .index("by_collection", ["collectionId"]),
@@ -126,11 +133,17 @@ export default defineSchema({
     "externalId",
   ]),
   bookAuthor: defineTable(bookAuthorSchema)
-    .index("by_bookId", ["bookId"])
-    .index("by_authorId", ["authorId"]),
+    .index("by_authorId", ["authorId"]).index("by_bookId",["bookId"]),
+  bookEpisodes: defineTable(bookEpisodesSchema).index("by_book",["bookId"]).index("by_episode",["episodeId"]),
   authors: defineTable(authorSchema).index("by_externalId", ["externalId"]),
   episodes: defineTable(episodeSchema).index("by_spotifyId", ["spotifyId"]),
-  guests: defineTable(guestSchema),
+  guests: defineTable(guestSchema).searchIndex("by_name", {
+    searchField: "name",
+  }),
+  guestEpisodes: defineTable(guestEpisodesSchema).index("by_episodeGuest", [
+    "episodeId",
+    "guestId",
+  ]),
   greetings: defineTable(greetingSchema)
     .index("by_value", ["value"])
     .searchIndex("by_value", {

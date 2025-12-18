@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { episodeSchema } from "./schema";
 import { v } from "convex/values";
+import * as Books from "./model/books";
 
 export const setEpisode = mutation({
   args: episodeSchema,
@@ -40,5 +41,33 @@ export const getAllEpisodes = query({
       numItems: 50,
       cursor: args.cursor ?? null,
     });
+  },
+});
+
+export const getAllInfosToEpisodes = query({
+  args: v.id("episodes"),
+  handler: async (ctx, args) => {
+    if ((await ctx.auth.getUserIdentity()) === null) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+
+    const ep = await ctx.db.get("episodes", args);
+    const books = (
+      await (ep
+        ? Promise.all(
+            ep.books.map(async (simpleBook) => {
+              return {
+                ...(await Books.getBookInfos(ctx, simpleBook.id)),
+                type: simpleBook.type,
+              };
+            }),
+          )
+        : [])
+    ).flat();
+
+    return {
+      ...ep,
+      books,
+    };
   },
 });
