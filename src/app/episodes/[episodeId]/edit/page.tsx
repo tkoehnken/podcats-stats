@@ -1,4 +1,4 @@
-import { getAllShowInfos, getEpisode } from "@/server/api/routers/spotify";
+import { getShowInfos, getEpisode } from "@/server/api/routers/spotify";
 import EpisodeEdit from "@/app/_components/episodeEdit";
 import type { Metadata } from "next";
 import { revalidateTag } from "next/cache";
@@ -6,7 +6,7 @@ import { db } from "@/server/firebase/util";
 import type { InternalEpisode } from "@/server/api/routers/google";
 
 export async function generateStaticParams() {
-  const show = await getAllShowInfos();
+  const show = await getShowInfos();
 
   return show.episodes.map((ep) => ({
     episodeId: ep.id,

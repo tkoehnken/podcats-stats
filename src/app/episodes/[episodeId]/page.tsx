@@ -1,9 +1,9 @@
-import { getAllShowInfos, getEpisode } from "@/server/api/routers/spotify";
+import { getShowInfos, getEpisode } from "@/server/api/routers/spotify";
 import Episode from "@/app/_components/episode";
 import type { Metadata } from "next";
 
 export async function generateStaticParams() {
-  const show = await getAllShowInfos();
+  const show = await getShowInfos();
 
   return show.episodes.map((ep) => ({
     episodeId: ep.id,

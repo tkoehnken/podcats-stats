@@ -1,8 +1,3 @@
-import {
-  type ExtraDataType,
-  getExtraDataForEpisode,
-} from "@/server/api/routers/google";
-
 let authToken: string | undefined = undefined;
 
 const baseURL = `https://api.spotify.com/v1/`;
@@ -46,12 +41,15 @@ const getAuthToken = async (): Promise<string> => {
 };
 
 type ShowPath = `shows/${string}`;
+type EpisodePath = `shows/${string}/episodes`;
 
-type Paths = ShowPath;
+type Paths = ShowPath | EpisodePath;
 
-type GetPathResponse<T extends Paths> = T extends ShowPath
-  ? SpotifyApi.ShowObject
-  : never;
+type GetPathResponse<T extends Paths> = T extends EpisodePath
+  ? SpotifyApi.ShowEpisodesResponse
+  : T extends ShowPath
+    ? SpotifyApi.ShowObject
+    : never;
 
 const rawSpotifyRequest = async (path: string): Promise<Response> => {
   const token = await getAuthToken();
@@ -64,8 +62,11 @@ const rawSpotifyRequest = async (path: string): Promise<Response> => {
 
 const execSpotify = async <T extends Paths>(
   path: T,
+  query?: Record<string, string>,
 ): Promise<GetPathResponse<T>> => {
-  const response = await rawSpotifyRequest(`${baseURL}${path}`);
+  const response = await rawSpotifyRequest(
+    `${baseURL}${path}${query ? "?" + new URLSearchParams(query).toString() : ""}`,
+  );
 
   if (response.ok) {
     return (await response.json()) as GetPathResponse<T>;
@@ -80,15 +81,17 @@ export const getShow = async (): Promise<SpotifyApi.ShowObject> => {
   return await execSpotify(path);
 };
 
-export type EpisodeType = SpotifyApi.EpisodeObjectSimplified & {
-  extraData?: ExtraDataType & { date: number };
-};
+export type EpisodeType = SpotifyApi.EpisodeObjectSimplified;
 
-type ShowType = {
+export type ShowType = {
   name: string;
   images: SpotifyApi.ImageObject[];
   description: string;
-  episodes: SpotifyApi.EpisodeObjectSimplified[];
+  episodes: {
+    items: SpotifyApi.EpisodeObjectSimplified[];
+    limit: number;
+    total: number;
+  };
   date: number;
 };
 
@@ -100,51 +103,24 @@ const chunkArray = <T>(arr: T[], size = 10): T[][] => {
   return chunks;
 };
 
-export const enrichEpisodeData = async (
-  episodes: SpotifyApi.EpisodeObjectSimplified[],
-): Promise<EpisodeType[]> => {
-  const moreData: EpisodeType[] = [...episodes];
-  const chunkSize = 10;
-  const chunks = chunkArray(moreData, chunkSize);
-  for (let i = 0; i < chunks.length; ++i) {
-    const chunk = chunks[i];
-    if (chunk) {
-      await Promise.all(
-        chunk.map(async (_, index) => {
-          const ep = moreData[index + i * chunkSize];
-          if (ep) {
-            ep.extraData = await getExtraDataForEpisode(ep.id);
-          }
-        }),
-      );
-    }
-  }
-  return moreData;
-};
-
 const loadSpotifyShowData = async () => {
-  "use cache"
+  "use cache";
   const show = await getShow();
-  let episodeUrl = show.episodes.next;
-  const episodes = show.episodes.items;
-  while (episodeUrl !== null) {
-    const ep = await rawSpotifyRequest(episodeUrl);
-    if (!ep.ok)
-      throw Error(`Failed ${episodeUrl} [${ep.status}]: ${ep.statusText}`);
-    const epData = (await ep.json()) as SpotifyApi.ShowEpisodesResponse;
-    episodes.push(...epData.items);
-    episodeUrl = epData.next;
-  }
+  console.log("SpotifyShowData", show);
   return {
     name: show.name,
     images: show.images,
     description: show.description,
-    episodes,
+    episodes: {
+      items: show.episodes.items,
+      total: show.episodes.total,
+      limit: show.episodes.limit,
+    },
     date: Date.now(),
   };
 };
 
-export const getAllShowInfos = async (): Promise<ShowType> => {
+export const getShowInfos = async (): Promise<ShowType> => {
   const show = await loadSpotifyShowData();
   return {
     name: show.name,
@@ -155,6 +131,21 @@ export const getAllShowInfos = async (): Promise<ShowType> => {
   };
 };
 
+export const getMoreEpisodes = async (offset: number, limit: number) => {
+  "use cache";
+  const data = await execSpotify(`shows/1MLK42q9YcHVVu8IM8cOdw/episodes`, {
+    offset: offset.toString(),
+    limit: limit.toString(),
+  });
+
+  return {
+    items: data.items,
+    offset: data.offset,
+    total: data.total,
+    limit: data.limit,
+  };
+};
+
 /**
  * Load all Episodes and search for id.
  * Its done this way to not have a request for each Episode if all the Episode data
@@ -162,10 +153,11 @@ export const getAllShowInfos = async (): Promise<ShowType> => {
  * @param id
  */
 export const getEpisode = async (id: string): Promise<EpisodeType> => {
-  const info = await getAllShowInfos();
+  /*const info = await getShowInfos();
   const episode = info.episodes.filter((ep) => ep.id === id);
   if (episode.length === 0) throw Error(`No episodes found with id ${id}`);
   const ep = episode[0];
   if (ep == undefined) throw Error(`No episodes found with id ${id}`);
-  return {...ep,extraData: await getExtraDataForEpisode(ep.id)};
+  return {...ep,extraData: await getExtraDataForEpisode(ep.id)};*/
+  throw new Error("Not implemented");
 };

@@ -1,20 +1,18 @@
 import Image from "next/image";
 import { getBiggestImage } from "@/lib/utils";
 import type { EpisodeType } from "@/server/api/routers/spotify";
-import { unstable_ViewTransition as ViewTransition } from "react";
+import { ViewTransition } from "react";
 import BookCoverV2 from "@/components/BookCoverV2";
 
 type EpisodeProps = {
   data: EpisodeType;
 };
 
-export default async function Episode({ data }: EpisodeProps) {
+export default function Episode({ data }: EpisodeProps) {
   const img = getBiggestImage(data.images);
-  const mainBook = data.extraData?.books?.find(({ types }) =>
-    types?.includes("main"),
-  );
+
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 py-2">
       <div className="flex flex-row gap-1">
         <ViewTransition name="episode_cover">
           <Image
@@ -22,18 +20,15 @@ export default async function Episode({ data }: EpisodeProps) {
             alt="Cover"
             height={400}
             width={400}
-            className="min-w-[200px] md:min-w-[300px] lg:min-w-[400px]"
+            className="w-[200px] min-w-[200px] md:w-[300px] md:min-w-[300px] lg:w-[400px] lg:min-w-[400px]"
           />
         </ViewTransition>
         <div>
           <h1 className="text-xl">{data.name}</h1>
           <p>{data.description}</p>
-          <div className="mt-4">
-            {data.extraData ? <ExtraData {...data.extraData} /> : null}
-          </div>
+          <div className="mt-4"></div>
         </div>
       </div>
-      <div>{mainBook ? <DisplayMainBook data={mainBook} /> : null}</div>
     </div>
   );
 }
@@ -77,7 +72,7 @@ const DisplayMainBook = ({ data }: DisplayMainBook) => (
     <BookCoverV2
       animated
       title={data.title}
-      className="min-h-[300px] min-w-[200px] md:min-h-[450px] md:min-w-[300px] lg:min-h-[600px] lg:min-w-[400px] max-h-[300px] max-w-[200px] md:max-h-[450px] md:max-w-[300px] lg:max-h-[600px] lg:max-w-[400px]"
+      className="max-h-[300px] min-h-[300px] max-w-[200px] min-w-[200px] md:max-h-[450px] md:min-h-[450px] md:max-w-[300px] md:min-w-[300px] lg:max-h-[600px] lg:min-h-[600px] lg:max-w-[400px] lg:min-w-[400px]"
       authors={data.authors.map(
         ({ firstname, lastname }) => `${firstname} ${lastname}`,
       )}
