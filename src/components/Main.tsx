@@ -6,6 +6,7 @@ import { use } from "react";
 import Episode from "@/app/_components/episode";
 import { useInfiniteLoader } from "react-window-infinite-loader";
 import { api } from "@/trpc/react";
+import { useSize } from "@/lib/size";
 
 type MainProps = {
   show: Promise<ShowType>;
@@ -13,6 +14,15 @@ type MainProps = {
 
 export function Main(props: MainProps) {
   const show = use(props.show);
+  const dynamicRowHeight = useDynamicRowHeight({
+    defaultRowHeight: 416,
+  });
+  useSize((size) => {
+    const px = size === "lg" ? 416 : size === "md" ? 316 : 216;
+    for (let i = 1; i < rows.length; i++) {
+      dynamicRowHeight.setRowHeight(i, px);
+    }
+  });
 
   const { data, fetchNextPage, isFetchingNextPage } =
     api.episodes.episodes.useInfiniteQuery(
@@ -24,6 +34,8 @@ export function Main(props: MainProps) {
           pageParams: [show.episodes.items.length],
         },
         initialCursor: show.episodes.items.length,
+        getPreviousPageParam: (lastPage) =>
+          lastPage.offset - lastPage.items.length,
       },
     );
 
@@ -37,16 +49,18 @@ export function Main(props: MainProps) {
   const onRowsLoaded = useInfiniteLoader({
     rowCount: show.episodes.total,
     isRowLoaded: (index) => {
-      return index < rows.length;
+      const firstPage = data.pages[0];
+      const lastPage = data.pages[data.pages.length - 1];
+      if (!firstPage || !lastPage) return false;
+      return (
+        index >= firstPage.offset &&
+        index <= lastPage.offset + lastPage.items.length
+      );
     },
     loadMoreRows: async () => {
       if (isFetchingNextPage) return;
       await fetchNextPage();
     },
-  });
-
-  const dynamicRowHeight = useDynamicRowHeight({
-    defaultRowHeight: 200,
   });
 
   return (
