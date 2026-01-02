@@ -47,7 +47,7 @@ export const getBookInfos = async (
 
   const authorIds = await ctx.db
     .query("bookAuthor")
-    .withIndex("by_authorIdBookId", (q) => q.eq("", id))
+    .withIndex("by_bookId", (q) => q.eq("bookId", id))
     .collect();
   const authors = (
     await Promise.all(

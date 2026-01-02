@@ -125,7 +125,7 @@ export default defineSchema({
     "publisher",
     "title",
   ]),
-  bookVariant: defineTable(bookVariantsSchema).index("by_isbn", ["isbn"]),
+  bookVariant: defineTable(bookVariantsSchema).index("by_isbn", ["isbn"]).index("by_type",["type"]),
   collectionBooks: defineTable(collectionBooksSchema)
     .index("by_book", ["bookId"])
     .index("by_collection", ["collectionId"]),
@@ -134,7 +134,7 @@ export default defineSchema({
   ]),
   bookAuthor: defineTable(bookAuthorSchema)
     .index("by_authorId", ["authorId"]).index("by_bookId",["bookId"]),
-  bookEpisodes: defineTable(bookEpisodesSchema).index("by_book",["bookId"]).index("by_episode",["episodeId"]),
+  bookEpisodes: defineTable(bookEpisodesSchema).index("by_book",["bookId"]).index("by_episodeType",["episodeId","type"]),
   authors: defineTable(authorSchema).index("by_externalId", ["externalId"]),
   episodes: defineTable(episodeSchema).index("by_spotifyId", ["spotifyId"]),
   guests: defineTable(guestSchema).searchIndex("by_name", {
