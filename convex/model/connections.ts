@@ -34,12 +34,12 @@ export async function connectBooksToEpisode(
 ) {
   const existingConnectionsForEpisode = await ctx.db
     .query("bookEpisodes")
-    .withIndex("by_episode", (q) => q.eq("episodeId", episodeId))
+    .withIndex("by_episodeType", (q) => q.eq("episodeId", episodeId))
     .collect();
 
   const missingBookIds = books.filter((book) =>
     existingConnectionsForEpisode.find(
-      (connection) => connection.bookId === book.id,
+      (connection) => connection.bookId === book.id && connection.type === book.type,
     ),
   );
 

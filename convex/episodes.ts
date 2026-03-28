@@ -55,11 +55,8 @@ export const getAllInfosToEpisodes = query({
     const books = (
       await (ep
         ? Promise.all(
-            ep.books.map(async (simpleBook) => {
-              return {
-                ...(await Books.getBookInfos(ctx, simpleBook.id)),
-                type: simpleBook.type,
-              };
+            ep.books.map(async (simpleBookId) => {
+              return await Books.getBookInfos(ctx, simpleBookId);
             }),
           )
         : [])

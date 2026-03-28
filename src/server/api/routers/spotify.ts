@@ -1,3 +1,5 @@
+import "spotify-api";
+
 let authToken: string | undefined = undefined;
 
 const baseURL = `https://api.spotify.com/v1/`;

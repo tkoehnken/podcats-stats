@@ -5,6 +5,13 @@ export const episodeSchema = {
   spotifyId: v.string(),
   books: v.array(v.id("books")),
   greetings: v.array(v.id("greetings")),
+  spotifyData: v.object({
+    name: v.string(),
+    description: v.string(),
+    releaseDate: v.string(),
+    durationMs: v.number(),
+    cover: v.string(),
+  })
 };
 
 export const bookEpisodesSchema = v.object({

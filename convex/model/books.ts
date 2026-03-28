@@ -3,7 +3,6 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { isNotNull } from "./util";
 import * as Collection from "./collections";
 
-
 export const createBook = async (
   ctx: MutationCtx,
   data: Omit<Doc<"books">, "variants" | "_id" | "_creationTime"> & {
@@ -35,10 +34,18 @@ export const getBookInfos = async (
     variants: Doc<"bookVariant">[];
     authors: Doc<"authors">[];
     collection: Doc<"collections">[];
+    inEpisodes: {
+      type: Doc<"bookEpisodes">["type"];
+      episodeId: Doc<"episodes">["_id"];
+    }[];
   }
 > => {
   const data = await ctx.db.get("books", id);
   if (!data) throw new Error("No books found!");
+  const bookTypes = await ctx.db
+    .query("bookEpisodes")
+    .withIndex("by_book", (q) => q.eq("bookId", id))
+    .collect();
   const variants = (
     await Promise.all(
       data.variants.map((variantId) => ctx.db.get("bookVariant", variantId)),
@@ -62,5 +69,9 @@ export const getBookInfos = async (
     variants,
     authors,
     collection,
+    inEpisodes: bookTypes.map((bookType) => ({
+      type: bookType.type,
+      episodeId: bookType.episodeId,
+    })),
   };
 };
