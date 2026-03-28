@@ -3,22 +3,22 @@ import { greetingSchema } from "./schema";
 import { v } from "convex/values";
 
 export const createGreeting = mutation({
-  args: greetingSchema,
+  args: v.object({data: greetingSchema}),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
     }
     const exists = await ctx.db
       .query("greetings")
-      .withIndex("by_value", (q) => q.eq("value", args.value))
+      .withIndex("by_value", (q) => q.eq("value", args.data.value))
       .collect();
 
     if (exists.length > 0) {
       throw new Error(
-        `Found ${exists.length} entries with value: ${args.value}`,
+        `Found ${exists.length} entries with value: ${args.data.value}`,
       );
     }
-    return await ctx.db.insert("greetings", args);
+    return await ctx.db.insert("greetings", args.data);
   },
 });
 
@@ -49,18 +49,18 @@ export const changeGreeting = mutation({
 });
 
 export const deleteGreeting = mutation({
-  args: v.id("greetings"),
+  args: v.object({id: v.id("greetings")}),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
     }
 
-    return await ctx.db.delete("greetings", args);
+    return await ctx.db.delete("greetings", args.id);
   },
 });
 
 export const searchSimilarGreeting = query({
-  args: v.string(),
+  args: v.object({search: v.string()}),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
@@ -68,7 +68,7 @@ export const searchSimilarGreeting = query({
 
     return await ctx.db
       .query("greetings")
-      .withSearchIndex("by_value", (q) => q.search("value", args))
+      .withSearchIndex("search_by_value", (q) => q.search("value", args.search))
       .collect();
   },
 });

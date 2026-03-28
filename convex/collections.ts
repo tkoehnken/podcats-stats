@@ -60,24 +60,24 @@ export const connectCollectionWithBooks = mutation({
 });
 
 export const getCollection = query({
-  args: v.id("collections"),
+  args: v.object({ id: v.id("collections") }),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
     }
-    return await ctx.db.get("collections", args);
+    return await ctx.db.get("collections", args.id);
   },
 });
 
 export const getBooksOfCollection = query({
-  args: v.id("collections"),
+  args: v.object({id: v.id("collections")}),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
     }
     return await ctx.db
       .query("collectionBooks")
-      .withIndex("by_collection", (q) => q.eq("collectionId", args))
+      .withIndex("by_collection", (q) => q.eq("collectionId", args.id))
       .collect();
   },
 });

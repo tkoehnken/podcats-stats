@@ -55,16 +55,16 @@ export const setEpisode = mutation({
 });
 
 export const getEpisode = query({
-  args: v.id("episodes"),
+  args: v.object({id: v.id("episodes")}),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
     }
-    return await ctx.db.get("episodes", args);
+    return await ctx.db.get("episodes", args.id);
   },
 });
 
-export const getAllEpisodes = query({
+export const getEpisodes = query({
   args: { cursor: v.optional(v.string()) },
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
@@ -77,14 +77,24 @@ export const getAllEpisodes = query({
   },
 });
 
+export const getAllEpisodes = query({
+  args: {},
+  handler: async (ctx) => {
+    if ((await ctx.auth.getUserIdentity()) === null) {
+      throw new Error("Unauthenticated call to mutation");
+    }
+    return ctx.db.query("episodes");
+  }
+})
+
 export const getAllInfosToEpisodes = query({
-  args: v.id("episodes"),
+  args: v.object({id: v.id("episodes")}),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
     }
 
-    const ep = await ctx.db.get("episodes", args);
+    const ep = await ctx.db.get("episodes", args.id);
     const books = (
       await (ep
         ? Promise.all(

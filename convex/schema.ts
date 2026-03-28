@@ -147,13 +147,13 @@ export default defineSchema({
   guests: defineTable(guestSchema).searchIndex("by_name", {
     searchField: "name",
   }),
-  guestEpisodes: defineTable(guestEpisodesSchema).index("by_episodeGuest", [
-    "episodeId",
+  guestEpisodes: defineTable(guestEpisodesSchema).index("by_guestEpisode", [
     "guestId",
+    "episodeId"
   ]),
   greetings: defineTable(greetingSchema)
     .index("by_value", ["value"])
-    .searchIndex("by_value", {
+    .searchIndex("search_by_value", {
       searchField: "value",
     }),
 });

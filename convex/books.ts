@@ -1,4 +1,4 @@
-import { mutation, } from "./_generated/server";
+import { mutation,query } from "./_generated/server";
 import { bookSchema, bookVariantsSchema } from "./schema";
 import { v } from "convex/values";
 import * as Books from "./model//books";
@@ -25,26 +25,29 @@ export const createBook = mutation({
   },
 });
 
-export const getBook = mutation({
-  args: v.union(
-    v.object({ isbn: v.string() }),
-    v.object({ id: v.id("books") }),
-  ),
+export const getBook = query({
+  args: v.object({
+    data: v.union(
+      v.object({ isbn: v.string() }),
+      v.object({ id: v.id("books") }),
+    ),
+  }),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
     }
-    if ("id" in args) {
-      return ctx.db.get("books", args.id);
+    const data = args.data;
+    if ("id" in data) {
+      return ctx.db.get("books", data.id);
     }
 
     const variant = await ctx.db
       .query("bookVariant")
-      .withIndex("by_isbn", (q) => q.eq("isbn", args.isbn))
+      .withIndex("by_isbn", (q) => q.eq("isbn", data.isbn))
       .unique();
 
     if (!variant) {
-      throw new Error(`No Book with the ISBN ${args.isbn} found!`);
+      throw new Error(`No Book with the ISBN ${data.isbn} found!`);
     }
 
     return ctx.db.get("books", variant.bookId);

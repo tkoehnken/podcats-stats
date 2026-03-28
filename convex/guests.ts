@@ -14,7 +14,7 @@ export const createGuest = mutation({
 });
 
 export const searchGuests = query({
-  args: v.string(),
+  args: v.object({search: v.string()}),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
@@ -22,31 +22,31 @@ export const searchGuests = query({
 
     return await ctx.db
       .query("guests")
-      .withSearchIndex("by_name", (q) => q.search("name", args))
+      .withSearchIndex("by_name", (q) => q.search("name", args.search))
       .collect();
   },
 });
 
 export const connectGuestEpisode = mutation({
-  args: v.array(
+  args: v.object({data: v.array(
     v.object({
       guestId: v.id("guests"),
       episodeId: v.id("episodes"),
     }),
-  ),
+  )}),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
     }
 
     await Promise.all(
-      args.map(async (connection) => {
+      args.data.map(async (connection) => {
         const exists = await ctx.db
           .query("guestEpisodes")
-          .withIndex("by_episodeGuest", (q) =>
+          .withIndex("by_guestEpisode", (q) =>
             q
-              .eq("episodeId", connection.episodeId)
-              .eq("guestId", connection.guestId),
+              .eq("guestId", connection.guestId)
+              .eq("episodeId", connection.episodeId),
           )
           .unique();
         if (!exists) {
@@ -58,25 +58,25 @@ export const connectGuestEpisode = mutation({
 });
 
 export const disconnectGuestEpisode = mutation({
-  args: v.array(
+  args: v.object({data: v.array(
     v.object({
       guestId: v.id("guests"),
       episodeId: v.id("episodes"),
     }),
-  ),
+  )}),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
     }
 
     await Promise.all(
-      args.map(async (connection) => {
+      args.data.map(async (connection) => {
         const exists = await ctx.db
           .query("guestEpisodes")
-          .withIndex("by_episodeGuest", (q) =>
+          .withIndex("by_guestEpisode", (q) =>
             q
+              .eq("guestId", connection.guestId)
               .eq("episodeId", connection.episodeId)
-              .eq("guestId", connection.guestId),
           )
           .unique();
         if (exists) {
@@ -88,7 +88,7 @@ export const disconnectGuestEpisode = mutation({
 });
 
 export const deleteGuest = mutation({
-  args: v.id("guests"),
+  args: v.object({id: v.id("guests")}),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
@@ -96,12 +96,12 @@ export const deleteGuest = mutation({
 
     const foundConnections = await ctx.db
       .query("guestEpisodes")
-      .withIndex("by_guestId", (q) => q.eq("guestId", args))
+      .withIndex("by_guestEpisode", (q) => q.eq("guestId", args.id))
       .collect();
 
     await Promise.all(
       foundConnections.map(({ _id: id }) => ctx.db.delete("guestEpisodes", id)),
     );
-    await ctx.db.delete("guests", args);
+    await ctx.db.delete("guests", args.id);
   },
 });
