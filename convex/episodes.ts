@@ -1,7 +1,40 @@
-import { mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { episodeSchema } from "./schema";
 import { v } from "convex/values";
 import * as Books from "./model/books";
+
+export const getEpisodeCount = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const episodes = await ctx.db.query("episodes").collect();
+    return episodes.length;
+  },
+});
+
+export const insertEpisodeFromSpotify = internalMutation({
+  args: {
+    spotifyId: v.string(),
+    spotifyData: v.object({
+      name: v.string(),
+      description: v.string(),
+      releaseDate: v.string(),
+      durationMs: v.number(),
+      cover: v.string(),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const exists = await ctx.db
+      .query("episodes")
+      .withIndex("by_spotifyId", (q) => q.eq("spotifyId", args.spotifyId))
+      .first();
+    if (exists) return exists._id;
+    return await ctx.db.insert("episodes", {
+      ...args,
+      books: [],
+      greetings: [],
+    });
+  },
+});
 
 export const setEpisode = mutation({
   args: episodeSchema,
