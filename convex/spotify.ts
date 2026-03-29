@@ -1,24 +1,8 @@
 import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-const SHOW_ID = "1MLK42q9YcHVVu8IM8cOdw";
+export const SHOW_ID = "1MLK42q9YcHVVu8IM8cOdw";
 const BASE_URL = "https://api.spotify.com/v1/";
-
-type SpotifyEpisode = {
-  id: string;
-  name: string;
-  html_description: string;
-  release_date: string;
-  duration_ms: number;
-  images: Array<{ url: string }>;
-};
-
-type SpotifyEpisodesResponse = {
-  items: SpotifyEpisode[];
-  total: number;
-  limit: number;
-  offset: number;
-};
 
 const getAuthToken = async (): Promise<string> => {
   const credentials = btoa(
@@ -45,6 +29,19 @@ export const syncEpisodes = internalAction({
     const token = await getAuthToken();
     const episodeCount = await ctx.runQuery(internal.episodes.getEpisodeCount);
 
+
+    const showResponse = await fetch(`${BASE_URL}shows/${SHOW_ID}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const showData = (await showResponse.json()) as SpotifyApi.SingleShowResponse
+    await ctx.runMutation(internal.show.setShow, {
+      spotifyId: SHOW_ID,
+      name: showData.name,
+      description: showData.html_description,
+      images: showData.images
+    });
+
+
     let offset = episodeCount;
     let total: number | undefined;
 
@@ -56,21 +53,22 @@ export const syncEpisodes = internalAction({
       if (!response.ok) {
         throw new Error(`Spotify request failed: ${response.status} ${response.statusText}`);
       }
-      const data = (await response.json()) as SpotifyEpisodesResponse;
+      const data = (await response.json()) as SpotifyApi.ShowEpisodesResponse;
       total = data.total;
 
-      for (const episode of data.items) {
-        await ctx.runMutation(internal.episodes.insertEpisodeFromSpotify, {
-          spotifyId: episode.id,
+
+      await ctx.runMutation(internal.episodes.insertEpisodeFromSpotify, {
+        episodes: data.items.map((item) => ({
+          spotifyId: item.id,
           spotifyData: {
-            name: episode.name,
-            description: episode.html_description,
-            releaseDate: episode.release_date,
-            durationMs: episode.duration_ms,
-            cover: episode.images[0]?.url ?? "",
+            name: item.name,
+            description: item.html_description,
+            releaseDate: item.release_date,
+            durationMs: item.duration_ms,
+            images: item.images ?? [],
           },
-        });
-      }
+        })),
+      });
 
       offset += data.items.length;
     } while (total !== undefined && offset < total);

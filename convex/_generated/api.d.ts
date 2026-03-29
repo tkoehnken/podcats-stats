@@ -20,6 +20,7 @@ import type * as model_collections from "../model/collections.js";
 import type * as model_connections from "../model/connections.js";
 import type * as model_episodes from "../model/episodes.js";
 import type * as model_util from "../model/util.js";
+import type * as show from "../show.js";
 import type * as spotify from "../spotify.js";
 
 import type {
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   "model/connections": typeof model_connections;
   "model/episodes": typeof model_episodes;
   "model/util": typeof model_util;
+  show: typeof show;
   spotify: typeof spotify;
 }>;
 

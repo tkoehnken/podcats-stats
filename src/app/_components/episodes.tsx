@@ -1,10 +1,9 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { use, useState } from "react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { getBiggestImage } from "@/lib/utils";
-import type { EpisodeType } from "@/server/api/routers/spotify";
 import Book from "@/components/Book";
 import {
   Collapsible,
@@ -13,15 +12,21 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { ViewTransition } from "react";
+import type { FunctionReturnType } from "convex/server";
+import type { api } from "@/convex/_generated/api";
+
+type ListOfEpisodes = FunctionReturnType<typeof api.episodes.getAllEpisodes>;
+type Episode = ListOfEpisodes[number];
 
 type EpisodesProps = {
-  list: EpisodeType[];
+  list: Promise<ListOfEpisodes>;
 };
 
 const Episodes = (props: EpisodesProps) => {
+  const list = use(props.list);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const items = props.list.filter(({ name }) => name.includes(searchTerm));
+  const items = list.filter((ep) => ep.spotifyData.name.includes(searchTerm));
 
   return (
     <div className="flex flex-col">
@@ -34,7 +39,7 @@ const Episodes = (props: EpisodesProps) => {
       </div>
       <div className="mt-2.5 flex flex-col gap-2.5">
         {items.map((item) => (
-          <Episode key={item.id} data={item} />
+          <Episode key={item.spotifyId} data={item} />
         ))}
       </div>
     </div>
@@ -42,16 +47,14 @@ const Episodes = (props: EpisodesProps) => {
 };
 
 type EpisodeProps = {
-  data: EpisodeType;
+  data: Episode;
 };
 
 const Episode = (props: EpisodeProps) => {
-  const img = getBiggestImage(props.data.images);
-  const mainBook = props.data.extraData?.books?.find(({ types }) =>
-    types?.includes("main"),
-  );
+  const img = getBiggestImage(props.data.spotifyData.images);
+  const mainBook = props.data.books?.find(({ inEpisodes }) => inEpisodes.find((iep)=>iep.episodeId === props.data._id)?.type === "main");
   const disabled =
-    !props.data.extraData?.books || props.data.extraData.books.length === 0;
+    !props.data?.books || props.data.books.length === 0;
 
   return (
     <Collapsible
@@ -80,13 +83,13 @@ const Episode = (props: EpisodeProps) => {
           </div>
           <div className="flex flex-col gap-2">
             <Link
-              href={`/episodes/${props.data.id}`}
+              href={`/episodes/${props.data.spotifyId}`}
               className="hover:underline"
             >
-              <h3 className="text-2xl">{props.data.name}</h3>
+              <h3 className="text-2xl">{props.data.spotifyData.name}</h3>
             </Link>
             <article className="whitespace-pre-wrap">
-              {props.data.description}
+              {props.data.spotifyData.description}
             </article>
           </div>
           {mainBook ? <Book data={mainBook} width={150} /> : null}
@@ -94,13 +97,7 @@ const Episode = (props: EpisodeProps) => {
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="mt-5 grid auto-cols-min grid-cols-[repeat(3,150px)] justify-between gap-5 md:grid-cols-[repeat(4,150px)] lg:grid-cols-[repeat(6,150px)]">
-          {props.data.extraData?.books
-            ?.filter(({ types }) => !types?.includes("main"))
-            ?.map((book) => (
-              <div key={book.id} className="w-[150px]">
-                <Book data={book} width={150} />
-              </div>
-            ))}
+
         </div>
       </CollapsibleContent>
     </Collapsible>

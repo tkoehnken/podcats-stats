@@ -1,4 +1,9 @@
-import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "./_generated/server";
 import { episodeSchema } from "./schema";
 import { v } from "convex/values";
 import * as Books from "./model/books";
@@ -13,26 +18,40 @@ export const getEpisodeCount = internalQuery({
 
 export const insertEpisodeFromSpotify = internalMutation({
   args: {
-    spotifyId: v.string(),
-    spotifyData: v.object({
-      name: v.string(),
-      description: v.string(),
-      releaseDate: v.string(),
-      durationMs: v.number(),
-      cover: v.string(),
-    }),
+    episodes: v.array(
+      v.object({
+        spotifyId: v.string(),
+        spotifyData: v.object({
+          name: v.string(),
+          description: v.string(),
+          releaseDate: v.string(),
+          durationMs: v.number(),
+          images: v.array(
+            v.object({
+              url: v.string(),
+              height: v.optional(v.number()),
+              width: v.optional(v.number()),
+            }),
+          ),
+        }),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
-    const exists = await ctx.db
-      .query("episodes")
-      .withIndex("by_spotifyId", (q) => q.eq("spotifyId", args.spotifyId))
-      .first();
-    if (exists) return exists._id;
-    return await ctx.db.insert("episodes", {
-      ...args,
-      books: [],
-      greetings: [],
-    });
+    return await Promise.all(
+      args.episodes.map(async (ep) => {
+        const exists = await ctx.db
+          .query("episodes")
+          .withIndex("by_spotifyId", (q) => q.eq("spotifyId", ep.spotifyId))
+          .unique();
+        if (exists) return;
+        await ctx.db.insert("episodes", {
+          ...ep,
+          books: [],
+          greetings: [],
+        });
+      }),
+    );
   },
 });
 
@@ -55,7 +74,7 @@ export const setEpisode = mutation({
 });
 
 export const getEpisode = query({
-  args: v.object({id: v.id("episodes")}),
+  args: v.object({ id: v.id("episodes") }),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
@@ -83,12 +102,22 @@ export const getAllEpisodes = query({
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");
     }
-    return ctx.db.query("episodes");
-  }
-})
+
+    const episodes = await ctx.db.query("episodes").collect();
+
+    return Promise.all(episodes.map(async (ep)=>{
+      return {
+        ...ep,
+        books: await Promise.all(
+          ep.books.map(async (bookId) => await Books.getBookInfos(ctx, bookId)),
+        ),
+      };
+    }));
+  },
+});
 
 export const getAllInfosToEpisodes = query({
-  args: v.object({id: v.id("episodes")}),
+  args: v.object({ id: v.id("episodes") }),
   handler: async (ctx, args) => {
     if ((await ctx.auth.getUserIdentity()) === null) {
       throw new Error("Unauthenticated call to mutation");

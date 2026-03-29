@@ -38,8 +38,8 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ClerkProvider>
-      <html lang="de" className={`${geist.variable}`}>
-        <body className="from-background to-primary bg-linear-to-r from-15% to-150%">
+      <html lang="de" className={`${geist.variable}`} suppressHydrationWarning>
+        <body className="from-background to-primary bg-linear-to-r from-15% to-150%" suppressHydrationWarning>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
@@ -48,13 +48,9 @@ export default async function RootLayout({
             <NavigationMenu className="z-20">
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <Link href="/" legacyBehavior passHref>
-                    <NavigationMenuLink
-                      className={navigationMenuTriggerStyle()}
-                    >
-                      Home
-                    </NavigationMenuLink>
-                  </Link>
+                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                    <Link href="/">Home</Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
