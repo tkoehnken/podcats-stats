@@ -5,6 +5,20 @@
 import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
-const config = {};
+const config = {
+  experimental: {
+    useCache: true,
+    viewTransition: true
+  },
+  images: {
+    remotePatterns: [{ hostname: "i.scdn.co" }],
+  },
+  reactCompiler: true,
+  logging: {
+    fetches: {
+      fullUrl: true,
+    }
+  }
+};
 
 export default config;
