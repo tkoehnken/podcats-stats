@@ -3,7 +3,6 @@ import "@/styles/globals.css";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
-import { TRPCReactProvider } from "@/trpc/react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -45,7 +44,7 @@ export default async function RootLayout({
             defaultTheme="dark"
             disableTransitionOnChange
           >
-            <NavigationMenu className="z-20">
+            <NavigationMenu className="z-20 fixed">
               <NavigationMenuList>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
@@ -54,7 +53,7 @@ export default async function RootLayout({
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
-            <TRPCReactProvider>{children}</TRPCReactProvider>
+            {children}
           </ThemeProvider>
         </body>
       </html>

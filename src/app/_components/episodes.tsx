@@ -30,7 +30,7 @@ const Episodes = (props: EpisodesProps) => {
 
   return (
     <div className="flex flex-col">
-      <div className="sticky top-2 w-80 self-end">
+      <div className="sticky top-2 w-80 self-end z-21">
         <Input
           value={searchTerm}
           placeholder="Search..."
@@ -64,7 +64,7 @@ const Episode = (props: EpisodeProps) => {
       <CollapsibleTrigger>
         <div className="flex flex-row gap-2 text-left">
           <div className="flex min-w-[150px] flex-col justify-between">
-            <ViewTransition name="episode_cover">
+            <ViewTransition name={`episode_cover_${props.data.spotifyId}`}>
               <Image
                 src={img.url}
                 height={150}
@@ -88,17 +88,18 @@ const Episode = (props: EpisodeProps) => {
             >
               <h3 className="text-2xl">{props.data.spotifyData.name}</h3>
             </Link>
-            <article className="whitespace-pre-wrap">
-              {props.data.spotifyData.description}
-            </article>
+            <article
+              className="whitespace-pre-wrap"
+              dangerouslySetInnerHTML={{
+                __html: props.data.spotifyData.description,
+              }}
+            />
           </div>
           {mainBook ? <Book data={mainBook} width={150} /> : null}
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="mt-5 grid auto-cols-min grid-cols-[repeat(3,150px)] justify-between gap-5 md:grid-cols-[repeat(4,150px)] lg:grid-cols-[repeat(6,150px)]">
-
-        </div>
+        <div className="mt-5 grid auto-cols-min grid-cols-[repeat(3,150px)] justify-between gap-5 md:grid-cols-[repeat(4,150px)] lg:grid-cols-[repeat(6,150px)]"></div>
       </CollapsibleContent>
     </Collapsible>
   );

@@ -1,4 +1,3 @@
-import type { Book as BookType } from "@/server/api/routers/google";
 import BookCoverV2 from "@/components/BookCoverV2";
 import {
   HoverCard,
@@ -6,9 +5,11 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import type { FunctionReturnType } from "convex/server";
+import type { api } from "@/convex/_generated/api";
 
 type BookProps = {
-  data: BookType;
+  data: FunctionReturnType<typeof api.episodes.getAllEpisodes>[number]["books"][number];
   width: number;
   height?: number;
 };
@@ -34,7 +35,7 @@ const Book = (props: BookProps) => (
                 .map(({ firstname, lastname }) => `${firstname} ${lastname}`)
                 .join(";")}
             </span>
-            <div dangerouslySetInnerHTML={{ __html: props.data.description }} />
+            <div dangerouslySetInnerHTML={{ __html: props.data.variants[0]?.description ?? "" }} />
           </div>
         </ScrollArea>
       </HoverCardContent>

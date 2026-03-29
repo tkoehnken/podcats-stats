@@ -56,18 +56,19 @@ export const syncEpisodes = internalAction({
       const data = (await response.json()) as SpotifyApi.ShowEpisodesResponse;
       total = data.total;
 
-
       await ctx.runMutation(internal.episodes.insertEpisodeFromSpotify, {
-        episodes: data.items.map((item) => ({
-          spotifyId: item.id,
-          spotifyData: {
-            name: item.name,
-            description: item.html_description,
-            releaseDate: item.release_date,
-            durationMs: item.duration_ms,
-            images: item.images ?? [],
-          },
-        })),
+        episodes: data.items
+          .filter((item) => item !== null)
+          .map((item) => ({
+            spotifyId: item.id,
+            spotifyData: {
+              name: item.name,
+              description: item.html_description,
+              releaseDate: item.release_date,
+              durationMs: item.duration_ms,
+              images: item.images ?? [],
+            },
+          })),
       });
 
       offset += data.items.length;

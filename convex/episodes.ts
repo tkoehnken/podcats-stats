@@ -38,18 +38,22 @@ export const insertEpisodeFromSpotify = internalMutation({
     ),
   },
   handler: async (ctx, args) => {
-    return await Promise.all(
+    await Promise.all(
       args.episodes.map(async (ep) => {
         const exists = await ctx.db
           .query("episodes")
           .withIndex("by_spotifyId", (q) => q.eq("spotifyId", ep.spotifyId))
           .unique();
         if (exists) return;
+        try {
         await ctx.db.insert("episodes", {
           ...ep,
           books: [],
           greetings: [],
         });
+        } catch (e) {
+          console.error("Failed to add",ep)
+        }
       }),
     );
   },
@@ -99,10 +103,6 @@ export const getEpisodes = query({
 export const getAllEpisodes = query({
   args: {},
   handler: async (ctx) => {
-    if ((await ctx.auth.getUserIdentity()) === null) {
-      throw new Error("Unauthenticated call to mutation");
-    }
-
     const episodes = await ctx.db.query("episodes").collect();
 
     return Promise.all(episodes.map(async (ep)=>{
