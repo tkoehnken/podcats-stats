@@ -27,6 +27,11 @@
         background-size: 600% 600%;
         animation: gradientShift 20s ease infinite;
     }
+
+    .animate-gradient-x-fast {
+        background-size: 300% 300%;
+        animation: gradientShift 2.5s ease infinite;
+    }
 }
 
 @theme {
